@@ -228,7 +228,8 @@ void QM::columnCovering(){
             remainOnset.remove(pos);
         }
     }
-    // cout << '\n';
+    // todo: find best fit prime implicant to cover on-set
+    
 }
 
 bool QM::impCmp(const ImpWithLit &imp1, const ImpWithLit &imp2){
