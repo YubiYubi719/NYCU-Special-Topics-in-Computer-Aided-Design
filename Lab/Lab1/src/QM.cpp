@@ -1,18 +1,18 @@
 #include "QM.h"
 
-QM::QM():varNum(0), maxLen(0){
+QuineMcclusky::QuineMcclusky():varNum(0), maxLen(0){
     ;
 }
 
-QM::~QM(){
+QuineMcclusky::~QuineMcclusky(){
     ;
 }
 
-QM::ImpWithLit::ImpWithLit(string bin, int lit): binary(bin), literal(lit){
+QuineMcclusky::ImpWithLit::ImpWithLit(string bin, int lit): binary(bin), literal(lit){
     ;
 }
 
-void QM::readfile(string filename){
+void QuineMcclusky::readfile(string filename){
     ifstream input(filename);
     string curString;
     // variable num
@@ -42,7 +42,7 @@ void QM::readfile(string filename){
     input.close();
 }
 
-string QM::int2Binary(int num){
+string QuineMcclusky::int2Binary(int num){
     if (num == 0) return "0";
 
     // int originNum = num;
@@ -62,7 +62,7 @@ string QM::int2Binary(int num){
     return binary;
 }
 
-pair<string,int> QM::int2Binary(int num, int &maxLen){
+pair<string,int> QuineMcclusky::int2Binary(int num, int &maxLen){
     if (num == 0) return {"0",0};
 
     // int originNum = num;
@@ -85,7 +85,7 @@ pair<string,int> QM::int2Binary(int num, int &maxLen){
     return {binary,oneNum};
 }
 
-int QM::binary2Int(string binary){
+int QuineMcclusky::binary2Int(string binary){
     int result = 0;
     int len = binary.length();
     for(int i = 0; i < len; ++i){
@@ -96,12 +96,12 @@ int QM::binary2Int(string binary){
 }
 
 
-void QM::buildImplicationTable(){
+void QuineMcclusky::buildImplicationTable(){
     vector<int> positions(on_set);
     positions.insert(positions.end(),dc_set.begin(),dc_set.end());
     for(int pos:positions){
         pair<string,int> binary = int2Binary(pos,maxLen);
-        if(implicationTable.size() < binary.second+1){
+        if((int)implicationTable.size() < binary.second+1){
             implicationTable.resize(binary.second+1);
         }
         implicationTable[binary.second].emplace_back(binary.first);
@@ -109,12 +109,12 @@ void QM::buildImplicationTable(){
     // Set all binaries' lengths to maxLen
     for(list<Implicant> &v:implicationTable){
         for(Implicant &curImp:v){
-            while(curImp.binary.length() < maxLen) curImp.binary = "0" + curImp.binary;
+            while((int)curImp.binary.length() < maxLen) curImp.binary = "0" + curImp.binary;
         }
     }
 }
 
-int QM::findDiff(string s1, string s2){
+int QuineMcclusky::findDiff(string s1, string s2){
     // if there is only one char different, return the different position
     // otherwise, return -1
     int len = s1.length();
@@ -129,17 +129,17 @@ int QM::findDiff(string s1, string s2){
     return (diffNum == 1)? diffIdx : -1;
 }
 
-void QM::removeNonPrimeImplicant(list<Implicant> &curList){
+void QuineMcclusky::removeNonPrimeImplicant(list<Implicant> &curList){
     for(auto iter = curList.begin(); iter != curList.end();){
         if(iter->combinable) iter = curList.erase(iter);
         else ++iter;
     }
 }
 
-bool QM::growImplicant(){
+bool QuineMcclusky::growImplicant(){
     int combinationCount = 0;
     unordered_set<Implicant,Implicant::Hash> biggerImplicants;
-    for(int i = 0; i < implicationTable.size()-1; ++i){
+    for(int i = 0; i < (int)implicationTable.size()-1; ++i){
         if(implicationTable[i].empty()) continue;
         biggerImplicants.clear();
         for(auto iter1 = implicationTable[i].begin(); iter1 != implicationTable[i].end(); ++iter1){
@@ -162,12 +162,12 @@ bool QM::growImplicant(){
     return (combinationCount > 0)? true : false;
 }
 
-vector<int> QM::implicant2Pos(string implicant){
+vector<int> QuineMcclusky::implicant2Pos(string implicant){
     // change implicant to corresponding integer
     // ex: 01-- equals to 0100, 0101, 0110, 0111
     // corresponding integer are 4, 5, 6, 7
     vector<int> dc_idx;
-    for(int i = 0; i < implicant.length(); ++i){
+    for(int i = 0; i < (int)implicant.length(); ++i){
         if(implicant[i] == '-') dc_idx.push_back(i); 
     }
     int boxSize = pow(2,dc_idx.size());
@@ -186,14 +186,14 @@ vector<int> QM::implicant2Pos(string implicant){
     }
     
     vector<int> result(binaries.size());
-    for(int i = 0; i < result.size(); ++i){
+    for(int i = 0; i < (int)result.size(); ++i){
         result[i] = binary2Int(binaries[i]);
     }
 
     return result;
 }
 
-void QM::columnCovering(){
+void QuineMcclusky::columnCovering(){
     // Get all prime implicants inside implicant table
     for(list<Implicant> curList:implicationTable){
         if(curList.empty()) continue;
@@ -232,7 +232,7 @@ void QM::columnCovering(){
     
 }
 
-bool QM::impCmp(const ImpWithLit &imp1, const ImpWithLit &imp2){
+bool QuineMcclusky::impCmp(const ImpWithLit &imp1, const ImpWithLit &imp2){
     if(imp1.literal != imp2.literal) return imp1.literal > imp2.literal;
 
     int len = imp1.binary.length();
@@ -246,7 +246,7 @@ bool QM::impCmp(const ImpWithLit &imp1, const ImpWithLit &imp2){
     return imp1.binary > imp2.binary;
 }
 
-void QM::printImplicants(){
+void QuineMcclusky::printImplicants(){
     cout << ".p " << primeImplicants.size() << '\n';
     for(string imp:primeImplicants){
         int litNum = 0;
@@ -256,7 +256,7 @@ void QM::printImplicants(){
         }
         primeImp_with_literal.emplace_back(imp,litNum);
     }
-    sort(primeImp_with_literal.begin(), primeImp_with_literal.end(),QM::impCmp);
+    sort(primeImp_with_literal.begin(), primeImp_with_literal.end(),QuineMcclusky::impCmp);
     int printNum = 0;
     for(ImpWithLit imp:primeImp_with_literal){
         int cnt = 0;

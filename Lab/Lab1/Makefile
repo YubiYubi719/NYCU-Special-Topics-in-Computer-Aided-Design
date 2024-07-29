@@ -12,11 +12,11 @@ SRCS = $(wildcard $(SRCDIR)/*.cpp)
 OBJS = $(patsubst $(SRCDIR)/%.cpp,$(OBJDIR)/%.o,$(SRCS))
 
 # testcase file
-CASEDIR = OpenCase
+CASEDIR = HW1_golden/testcase
 OUTPUTDIR = output
 
 # change here!!
-TESTINPUT = input1.txt
+TESTINPUT = input6.txt
 TESTOUTPUT = $(TESTINPUT).out
 
 TARGET = QM

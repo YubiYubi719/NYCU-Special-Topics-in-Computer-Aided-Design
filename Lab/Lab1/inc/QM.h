@@ -13,7 +13,7 @@
 #include "Implicant.h"
 using namespace std;
 
-class QM{
+class QuineMcclusky{
 public:
     struct ImpWithLit{
         ImpWithLit(string bin, int lit);
@@ -21,8 +21,8 @@ public:
         int literal;
     };
     // Constructors/Distructors
-    QM();
-    ~QM();
+    QuineMcclusky();
+    ~QuineMcclusky();
 
     // Member functions
     void readfile(string filename);
