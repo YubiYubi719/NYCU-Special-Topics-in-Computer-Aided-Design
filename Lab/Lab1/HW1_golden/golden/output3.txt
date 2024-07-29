@@ -1,0 +1,21 @@
+.p 10
+ABDE
+AB'C'E
+AC'D
+A'BCD'
+A'BC'E
+A'BD'E
+A'B'CD
+A'B'DE
+BC'D
+C'DE
+
+.mc 7
+ABDE
+AB'C'E
+AC'D
+A'BCD'
+A'BC'E
+A'B'CD
+BC'D
+literal=26

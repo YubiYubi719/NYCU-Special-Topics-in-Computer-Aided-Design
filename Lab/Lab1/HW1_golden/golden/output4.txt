@@ -1,0 +1,31 @@
+.p 18
+ABCD'F'
+ABC'EF'
+ABD'E
+AB'CDF'
+AB'CD'E'
+AB'CD'F
+AB'C'EF
+ACE'F'
+AD'EF
+A'BC'DE'F'
+A'BC'D'E'F
+A'B'CE'F
+A'B'C'EF'
+A'B'D'EF'
+A'CD'EF'
+
+.mc 12
+ABC'EF'
+ABD'E
+AB'CDF'
+AB'CD'F
+AB'C'EF
+ACE'F'
+A'BC'DE'F'
+A'BC'D'E'F
+A'B'CE'F
+A'B'C'EF'
+A'CD'EF'
+BCEF
+literal=59
