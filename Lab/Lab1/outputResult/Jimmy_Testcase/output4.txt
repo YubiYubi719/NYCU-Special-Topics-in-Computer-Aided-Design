@@ -1,0 +1,17 @@
+.p 9
+ACDE'
+A'BC'E
+A'C'D'E'
+A'B'D
+A'B'E'
+A'DE
+BC'D'
+B'DE'
+B'C
+
+.mc 4
+ACDE'
+A'B'D
+BC'D'
+B'C
+literal=12

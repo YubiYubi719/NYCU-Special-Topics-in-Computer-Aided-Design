@@ -1,0 +1,20 @@
+.mc 18
+A'C'D'E'FH
+A'B'D'E'FGH'
+A'B'C'FGH'
+A'B'C'D'EGH'
+A'B'C'D'EF'G'H
+A'B'C'DE'GH'
+A'B'CEFG'H
+A'B'CDE'G'H
+A'BDEGH'
+A'BC'D'E'G'H
+A'BC'DE'FH'
+A'BC'DEF'H'
+A'BCD'E'F'H'
+AB'C'D'E'F'H'
+AB'C'DE'G'H'
+AB'CDF'GH'
+ABDE'F'GH'
+ABC'D'EF'GH'
+literal=125

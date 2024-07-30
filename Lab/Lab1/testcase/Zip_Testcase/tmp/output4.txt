@@ -1,0 +1,12 @@
+.mc 10
+B'D'EF'
+B'C'EF'
+B'C'D'F'
+A'CDEF
+A'B'DE'
+A'B'CE'
+A'BD'E'F
+ABC'DEF
+ABCD'F
+ABCDEF'
+literal=47

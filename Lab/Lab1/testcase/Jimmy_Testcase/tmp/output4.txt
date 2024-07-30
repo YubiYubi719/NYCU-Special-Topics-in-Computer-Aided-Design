@@ -1,0 +1,6 @@
+.mc 4
+B'C
+BC'D'
+A'B'D
+ACDE'
+literal=12

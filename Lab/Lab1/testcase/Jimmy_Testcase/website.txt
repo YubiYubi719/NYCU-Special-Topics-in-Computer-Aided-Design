@@ -1,0 +1,5 @@
+# Testcase from jimmy980189
+https://github.com/jimmy980189/NYCU-EEIE30047-Special-Topics-in-Computer-Aided-Design/tree/main/HW1-Quine-McCluskey-Method/hw1_score/testcase
+
+For output with the binary format, change the macro in include/Util.h
+#define DUMP_ALPHABETS 1 // 0-> Dump binary

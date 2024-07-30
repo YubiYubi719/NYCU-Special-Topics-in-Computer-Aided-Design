@@ -12,11 +12,11 @@ SRCS = $(wildcard $(SRCDIR)/*.cpp)
 OBJS = $(patsubst $(SRCDIR)/%.cpp,$(OBJDIR)/%.o,$(SRCS))
 
 # testcase file
-CASEDIR = OpenCase
+CASEDIR = testcase/OpenCase
 OUTPUTDIR = output
 
 # change here!!
-CASEIDX = 6
+CASEIDX = 1
 TESTINPUT = input$(CASEIDX).txt
 TESTOUTPUT = output$(CASEIDX).txt
 

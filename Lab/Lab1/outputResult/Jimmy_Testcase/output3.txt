@@ -1,0 +1,8 @@
+.p 3
+A'C
+B'C
+D
+
+.mc 1
+D
+literal=1

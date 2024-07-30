@@ -1,0 +1,5 @@
+.mc 3
+A'B
+AC'D
+AB'D'
+literal=8
