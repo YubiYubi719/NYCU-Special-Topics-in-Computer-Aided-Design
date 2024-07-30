@@ -193,7 +193,66 @@ vector<int> QuineMcclusky::implicant2Pos(string implicant){
     return result;
 }
 
-void QuineMcclusky::columnCovering(){
+int QuineMcclusky::calLiteral(const string &imp){
+    int lit = 0;
+    for(char c:imp){
+        if(c != '-') ++lit; 
+    }
+    return lit;
+}
+
+vector<string> QuineMcclusky::coverRemainingOnset(vector<int> remainOnset){
+    // initialize coverage table and literal count of each nonEssPrimeImp
+    vector<int> implicantCoverage;
+    vector<int> literalsCount;
+    for(string imp:nonEssPrimeImp){
+        vector<int> pos = implicant2Pos(imp);
+        int val = 0;
+        for(int p:pos){
+            vector<int>::iterator it = find(remainOnset.begin(), remainOnset.end(), p);
+            if(it != remainOnset.end()) val += 1 << ((remainOnset.size()-1) - (it-remainOnset.begin()));
+        }
+        implicantCoverage.push_back(val);
+        literalsCount.push_back(calLiteral(imp));
+    }
+
+
+    int maxState = 1 << remainOnset.size();
+    vector<int> dp(maxState, INT_MAX);
+    vector<int> parent(maxState, -1);
+    vector<int> choice(maxState, -1);
+    vector<int> literalsDp(maxState, INT_MAX);
+    dp[0] = 0;
+    literalsDp[0] = 0;
+
+    // use DP to find minimum coverage
+    for (int i = 0; i < maxState; ++i) {
+        if (dp[i] == INT_MAX) continue;
+        for (int j = 0; j < (int)nonEssPrimeImp.size(); ++j) {
+            int nextCover = i | implicantCoverage[j];
+            if (dp[i] + 1 < dp[nextCover] || (dp[i] + 1 == dp[nextCover] && (literalsDp[i] + literalsCount[j] < literalsDp[nextCover]))) {
+                dp[nextCover] = dp[i] + 1;
+                literalsDp[nextCover] = literalsDp[i] + literalsCount[j];
+                parent[nextCover] = i;
+                choice[nextCover] = j;
+            }
+        }
+    }
+
+    // top-down to trace the choosed prime implicants
+    vector<string> implicants;
+    int state = maxState - 1;
+    // cout << dp[state] << '\n';
+    while (parent[state] != -1) {
+        implicants.push_back(nonEssPrimeImp[choice[state]]);
+        state = parent[state];
+    }
+
+    return implicants;
+}
+
+
+void QuineMcclusky::columnCovering(){ // final answer stores in list<string> essPrimeImp;
     // Get all prime implicants inside implicant table
     for(list<Implicant> curList:implicationTable){
         if(curList.empty()) continue;
@@ -215,11 +274,21 @@ void QuineMcclusky::columnCovering(){
             }
         }
     }
-    // Find essential prime implicant
-    vector<string> essPrimeImp;
+
+    // Find essential prime implicant 
+    unordered_set<string> tmpEssImp;
+    unordered_set<string> tmpnonEssImp;
     for(pair<int,vector<string>> p:mp){
-        if(p.second.size() == 1) essPrimeImp.push_back(p.second[0]);
+        if(p.second.size() == 1) tmpEssImp.insert(p.second[0]);
+        else{
+            for(string imp:p.second){
+                tmpnonEssImp.insert(imp);
+            }
+        }
     }
+    essPrimeImp.insert(essPrimeImp.end(),tmpEssImp.begin(),tmpEssImp.end());
+    nonEssPrimeImp.insert(nonEssPrimeImp.end(),tmpnonEssImp.begin(),tmpnonEssImp.end());
+
     // check which on-set has not been covered by essential prime implicant yet
     list<int> remainOnset(on_set.begin(), on_set.end());
     for(string esspi:essPrimeImp){
@@ -228,11 +297,12 @@ void QuineMcclusky::columnCovering(){
             remainOnset.remove(pos);
         }
     }
-    // todo: find best fit prime implicant to cover on-set
-    
+
+    vector<string> imps = coverRemainingOnset(vector<int> (remainOnset.begin(),remainOnset.end()));
+    if(!imps.empty()) essPrimeImp.insert(essPrimeImp.end(),imps.begin(),imps.end());
 }
 
-bool QuineMcclusky::impCmp(const ImpWithLit &imp1, const ImpWithLit &imp2){
+bool QuineMcclusky::ImpWithLit::impCmp(const ImpWithLit &imp1, const ImpWithLit &imp2){
     if(imp1.literal != imp2.literal) return imp1.literal > imp2.literal;
 
     int len = imp1.binary.length();
@@ -246,17 +316,14 @@ bool QuineMcclusky::impCmp(const ImpWithLit &imp1, const ImpWithLit &imp2){
     return imp1.binary > imp2.binary;
 }
 
-void QuineMcclusky::printImplicants(){
-    cout << ".p " << primeImplicants.size() << '\n';
+void QuineMcclusky::printImplicants(ofstream &output){
+    output << ".p " << primeImplicants.size() << '\n';
+
+    vector<ImpWithLit> primeImp_with_literal;
     for(string imp:primeImplicants){
-        int litNum = 0;
-        for(char c:imp){
-            if(c == '-') continue;
-            ++litNum;
-        }
-        primeImp_with_literal.emplace_back(imp,litNum);
+        primeImp_with_literal.emplace_back(imp,calLiteral(imp));
     }
-    sort(primeImp_with_literal.begin(), primeImp_with_literal.end(),QuineMcclusky::impCmp);
+    sort(primeImp_with_literal.begin(), primeImp_with_literal.end(),QuineMcclusky::ImpWithLit::impCmp);
     int printNum = 0;
     for(ImpWithLit imp:primeImp_with_literal){
         int cnt = 0;
@@ -265,12 +332,39 @@ void QuineMcclusky::printImplicants(){
                 cnt++;
                 continue;
             }
-            if(c == '1') cout << (char)('A'+cnt);
-            else cout << (char)('A'+cnt) << '\'';
+            if(c == '1') output << (char)('A'+cnt);
+            else output << (char)('A'+cnt) << '\'';
             ++cnt;
         }
-        cout << '\n';
+        output << '\n';
         ++printNum;
         if(printNum == 15) break;
     }
+    output << '\n';
+}
+
+void QuineMcclusky::printMinimumCovering(ofstream &output){
+    output << ".mc " << essPrimeImp.size() << '\n';
+    
+    vector<ImpWithLit> imp_with_literal;
+    for(string imp:essPrimeImp){
+        imp_with_literal.emplace_back(imp,calLiteral(imp));
+    }
+    sort(imp_with_literal.begin(), imp_with_literal.end(),QuineMcclusky::ImpWithLit::impCmp);
+    int totalLiteral = 0;
+    for(ImpWithLit imp:imp_with_literal){
+        int cnt = 0;
+        for(char c:imp.binary){
+            if(c == '-'){
+                cnt++;
+                continue;
+            }
+            if(c == '1') output << (char)('A'+cnt);
+            else output << (char)('A'+cnt) << '\'';
+            ++cnt;
+        }
+        totalLiteral += imp.literal;
+        output << '\n';
+    }
+    output << "literal=" << totalLiteral;
 }

@@ -5,9 +5,10 @@
             "name": "(gdb) Launch",
             "type": "cppdbg",
             "request": "launch",
-            "program": "${workspaceFolder}/main",
+            "program": "${workspaceFolder}/312510224",
             "args": [
-                "OpenCase/input1.txt"
+                "OpenCase/input6.txt",
+                "output/output6.txt"
             ],
             "stopAtEntry": false,
             "cwd": "${workspaceFolder}",

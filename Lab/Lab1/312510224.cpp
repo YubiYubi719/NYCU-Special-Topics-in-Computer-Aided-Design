@@ -10,7 +10,12 @@ int main(int argc, char* argv[]){
         // ++cnt;
     };
     qm.columnCovering();
-    qm.printImplicants();
+
+    // print result
+    ofstream output(argv[2]);
+    qm.printImplicants(output);
+    qm.printMinimumCovering(output);
+    output.close();
 
     return 0;
 }

@@ -12,14 +12,15 @@ SRCS = $(wildcard $(SRCDIR)/*.cpp)
 OBJS = $(patsubst $(SRCDIR)/%.cpp,$(OBJDIR)/%.o,$(SRCS))
 
 # testcase file
-CASEDIR = HW1_golden/testcase
+CASEDIR = OpenCase
 OUTPUTDIR = output
 
 # change here!!
-TESTINPUT = input6.txt
-TESTOUTPUT = $(TESTINPUT).out
+CASEIDX = 6
+TESTINPUT = input$(CASEIDX).txt
+TESTOUTPUT = output$(CASEIDX).txt
 
-TARGET = QM
+TARGET = 312510224.o
 
 all: $(TARGET)
 
@@ -29,7 +30,7 @@ $(OBJDIR):
 $(OUTPUTDIR):
 	@mkdir $(OUTPUTDIR)
 
-$(TARGET): main.cpp $(OBJS)
+$(TARGET): 312510224.cpp $(OBJS)
 	$(CXX) $(WARNINGS) $(CXXFLAGS) $(OPTFLAGS) $^ -o $@
 
 $(OBJDIR)/%.o: $(SRCDIR)/%.cpp | $(OBJDIR)
