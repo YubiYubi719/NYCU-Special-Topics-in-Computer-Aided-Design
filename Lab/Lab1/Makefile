@@ -1,7 +1,7 @@
 # compiler settings 
 CXX = g++
 CXXFLAGS = -I ./inc -std=c++11
-OPTFLAGS = -march=native -flto -funroll-loops -finline-functions -ffast-math -O3
+OPTFLAGS = -flto -funroll-loops -finline-functions -ffast-math -O3
 WARNINGS = -g -Wall
 
 # Source files and object files
@@ -16,7 +16,7 @@ CASEDIR = testcase/OpenCase
 OUTPUTDIR = output
 
 # change here!!
-CASEIDX = 6
+CASEIDX = 1
 TESTINPUT = input$(CASEIDX).txt
 TESTOUTPUT = output$(CASEIDX).txt
 
