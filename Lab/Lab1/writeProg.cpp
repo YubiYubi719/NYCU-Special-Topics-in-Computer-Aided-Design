@@ -1,4 +1,7 @@
-#include <bits/stdc++.h>
+#include <fstream>
+#include <string>
+#include <sstream>
+#include <vector>
 using namespace std;
 
 int main(int argc, char* argv[]){

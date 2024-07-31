@@ -1,4 +1,8 @@
-#include <bits/stdc++.h>
+#include <iostream>
+#include <fstream>
+#include <string>
+#include <sstream>
+#include <vector>
 #include <unordered_map>
 using namespace std;
 
