@@ -5,9 +5,9 @@ binaryName=312510224.o
 make clean
 make > make.log
 
-g++ -std-c++11 verifier.cpp -o verifier
-g++ -std-c++11 writeProg.cpp -o writeProg
-g++ -std-c++11 changeType.cpp -o changeType
+g++ -std=c++11 verifier.cpp -o verifier
+g++ -std=c++11 writeProg.cpp -o writeProg
+g++ -std=c++11 changeType.cpp -o changeType
 
 if [ -d "outputResult" ]; then
     rm -rf outputResult
