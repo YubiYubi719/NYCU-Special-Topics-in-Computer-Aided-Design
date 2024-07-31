@@ -87,9 +87,9 @@ pair<string,int> QuineMcclusky::int2Binary(int num, int &maxLen){
 
 int QuineMcclusky::binary2Int(string binary){
     int result = 0;
-    int len = binary.length();
-    for(int i = 0; i < len; ++i){
-        result += (binary[len-1-i]-'0') * pow(2,i);
+    size_t len = binary.length();
+    for(size_t i = 0; i < len; ++i){
+        result += (binary[(int)len-1-i]-'0') * (1 << i);
     }
 
     return result;
@@ -117,10 +117,9 @@ void QuineMcclusky::buildImplicationTable(){
 int QuineMcclusky::findDiff(string s1, string s2){
     // if there is only one char different, return the different position
     // otherwise, return -1
-    int len = s1.length();
     int diffNum = 0;
     int diffIdx = 0;
-    for(int i = 0; i < len; ++i){
+    for(size_t i = 0; i < s1.length(); ++i){
         if(s1[i] == s2[i]) continue;
         ++diffNum;
         diffIdx = i;
@@ -186,7 +185,7 @@ vector<int> QuineMcclusky::implicant2Pos(string implicant){
     }
     
     vector<int> result(binaries.size());
-    for(int i = 0; i < (int)result.size(); ++i){
+    for(size_t i = 0; i < result.size(); ++i){
         result[i] = binary2Int(binaries[i]);
     }
 
@@ -202,14 +201,13 @@ int QuineMcclusky::calLiteral(const string &imp){
 }
 
 vector<string> QuineMcclusky::coverRemainingOnset(vector<int> remainOnset){
-    
     // initialize coverage table and literal count of each nonEssPrimeImp
     vector<int> implicantCoverage;
     vector<int> literalsCount;
     for(string imp:nonEssPrimeImp){
         vector<int> pos = implicant2Pos(imp);
         int val = 0;
-        for(int p:pos){
+        for(const int &p:pos){
             vector<int>::iterator it = find(remainOnset.begin(), remainOnset.end(), p);
             if(it != remainOnset.end()) val += 1 << ((remainOnset.size()-1) - (it-remainOnset.begin()));
         }
@@ -217,18 +215,18 @@ vector<string> QuineMcclusky::coverRemainingOnset(vector<int> remainOnset){
         literalsCount.push_back(calLiteral(imp));
     }
 
-
+    // Using Dynamic Programming approach
     int maxState = 1 << remainOnset.size();
-    vector<int> dp(maxState, INT_MAX);
-    vector<int> parent(maxState, -1);
+    vector<int> dp(maxState, INT_MAX); // idx: covered onset, ex: if covered 0,1,3 onset, its idx is 3'b1011 = 11
+                                       // value: minimum implicant number that can cover current onsets
+    vector<int> parent(maxState, -1); 
     vector<int> choice(maxState, -1);
     vector<int> literalsDp(maxState, INT_MAX);
     dp[0] = 0;
     literalsDp[0] = 0;
 
-    // use DP to find minimum coverage
     for (int i = 0; i < maxState; ++i) {
-        if (dp[i] == INT_MAX) continue;
+        if (dp[i] == INT_MAX) continue; // can not cover the i_th onset
         for (int j = 0; j < (int)nonEssPrimeImp.size(); ++j) {
             int nextCover = i | implicantCoverage[j];
             if (dp[i] + 1 < dp[nextCover] || (dp[i] + 1 == dp[nextCover] && (literalsDp[i] + literalsCount[j] < literalsDp[nextCover]))) {
