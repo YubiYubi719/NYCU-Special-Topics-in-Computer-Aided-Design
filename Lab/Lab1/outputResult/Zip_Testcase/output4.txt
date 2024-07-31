@@ -1,0 +1,29 @@
+.p 19
+ABCDEF'
+ABC'DEF
+ABCD'F
+AB'C'D'E'
+A'BD'E'F
+A'CDEF
+A'CD'E'F
+BCD'E'F
+A'B'CE'
+A'B'C'D
+A'B'C'F'
+A'B'DE'
+A'B'DF
+A'B'D'F'
+A'B'E'F'
+
+.mc 10
+ABCDEF'
+ABC'DEF
+ABCD'F
+A'BD'E'F
+A'CDEF
+A'B'CE'
+A'B'C'D
+B'C'D'F'
+B'C'EF'
+B'D'EF'
+literal=47

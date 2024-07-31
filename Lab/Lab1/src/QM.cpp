@@ -202,6 +202,7 @@ int QuineMcclusky::calLiteral(const string &imp){
 }
 
 vector<string> QuineMcclusky::coverRemainingOnset(vector<int> remainOnset){
+    
     // initialize coverage table and literal count of each nonEssPrimeImp
     vector<int> implicantCoverage;
     vector<int> literalsCount;

@@ -1,0 +1,32 @@
+.p 38
+ABC'D'EF'GH'
+AB'CDEFG'H'
+ABDE'F'GH'
+AB'CDF'GH'
+AB'C'DE'G'H'
+AB'C'D'E'F'H'
+AB'C'D'E'GH'
+AB'C'E'F'G'H'
+AB'DEF'GH'
+ACDE'F'GH'
+A'BCDEFH'
+A'BCD'E'F'H'
+A'BC'DEF'H'
+A'BC'DE'FH'
+A'BC'D'E'G'H
+
+.mc 13
+ABC'D'EF'GH'
+ABDE'F'GH'
+AB'CDF'GH'
+AB'C'DE'G'H'
+AB'C'D'E'F'H'
+A'BC'D'E'G'H
+A'B'CDE'G'H
+A'B'CD'E'GH'
+A'B'CEFG'H
+A'B'C'D'EF'G'
+A'BDEGH'
+A'B'C'D'E'F
+A'B'C'EGH'
+literal=89

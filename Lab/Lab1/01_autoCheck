@@ -1,7 +1,13 @@
 #!/bin/bash
-PATNUM=5
 
+binaryName=312510224.o
+
+make clean
 make > make.log
+
+g++ verifier.cpp -o verifier
+g++ writeProg.cpp -o writeProg
+g++ changeType.cpp -o changeType
 
 if [ -d "outputResult" ]; then
     rm -rf outputResult
@@ -15,13 +21,22 @@ mkdir checkResult
 mkdir outputResult/Jimmy_Testcase
 echo -e "\033[0;34mJimmy_Testcase\033[0m"
 for((i = 1; i <= 6; i = i+1)) do
-    ./312510224.o testcase/Jimmy_Testcase/input${i}.txt outputResult/Jimmy_Testcase/output${i}.txt
+    ./$binaryName testcase/Jimmy_Testcase/input${i}.txt outputResult/Jimmy_Testcase/output${i}.txt
     ./verifier testcase/Jimmy_Testcase/tmp/output${i}.txt outputResult/Jimmy_Testcase/output${i}.txt  > checkResult/check.log
     if grep -i -q "congratulations, correct answer!" "checkResult/check.log"; then
         echo -e "\033[0;34mPass  \033[m  \033[0;32mPattern No.$i "
     else
-        echo -e "\033[31m--- Check Fail ---\033[0m"
-        rm -f make.log
+        ./changeType outputResult/Jimmy_Testcase/output${i}.txt
+        ./writeProg testcase/Jimmy_Testcase/input${i}.txt
+        g++ onsetCoverChecker.cpp -o onsetCoverChecker
+        ./onsetCoverChecker > checkResult/onsetCoverChecker.log
+        if grep -i -q "The Boolean function covers the specified on-set." "checkResult/onsetCoverChecker.log"; then
+            echo -e "\033[0;34mPass  \033[m  \033[0;32mPattern No.$i \033[0;34m(Diff)"
+        else
+            echo -e "\033[31m--- Check Fail ---\033[0m"
+            rm -f make.log
+            exit
+        fi
     fi
 done
 
@@ -29,16 +44,48 @@ done
 mkdir outputResult/OpenCase
 echo -e "\033[0;34mOpenCase\033[0m"
 for((i = 1; i <= 6; i = i+1)) do
-    ./312510224.o testcase/OpenCase/input${i}.txt outputResult/OpenCase/output${i}.txt
+    ./$binaryName testcase/OpenCase/input${i}.txt outputResult/OpenCase/output${i}.txt
     ./verifier testcase/OpenCase/output${i}.txt outputResult/OpenCase/output${i}.txt  > checkResult/check.log
     if grep -i -q "congratulations, correct answer!" "checkResult/check.log"; then
         echo -e "\033[0;34mPass  \033[m  \033[0;32mPattern No.$i "
     else
-        echo -e "\033[31m--- Check Fail ---\033[0m"
-        rm -f make.log
+        ./changeType outputResult/OpenCase/output${i}.txt
+        ./writeProg testcase/OpenCase/input${i}.txt
+        g++ onsetCoverChecker.cpp -o onsetCoverChecker
+        ./onsetCoverChecker > checkResult/onsetCoverChecker.log
+        if grep -i -q "The Boolean function covers the specified on-set." "checkResult/onsetCoverChecker.log"; then
+            echo -e "\033[0;34mPass  \033[m  \033[0;32mPattern No.$i \033[0;34m(Diff)"
+        else
+            echo -e "\033[31m--- Check Fail ---\033[0m"
+            rm -f make.log
+            exit
+        fi
+    fi
+done
+
+# Zip_Testcase
+mkdir outputResult/Zip_Testcase
+echo -e "\033[0;34mZip_Testcase\033[0m"
+for((i = 1; i <= 6; i = i+1)) do
+    ./$binaryName testcase/Zip_Testcase/input${i}.txt outputResult/Zip_Testcase/output${i}.txt
+    ./verifier testcase/Zip_Testcase/tmp/output${i}.txt outputResult/Zip_Testcase/output${i}.txt  > checkResult/check.log
+    if grep -i -q "congratulations, correct answer!" "checkResult/check.log"; then
+        echo -e "\033[0;34mPass  \033[m  \033[0;32mPattern No.$i "
+    else
+        ./changeType outputResult/Zip_Testcase/output${i}.txt
+        ./writeProg testcase/Zip_Testcase/input${i}.txt
+        g++ onsetCoverChecker.cpp -o onsetCoverChecker
+        ./onsetCoverChecker > checkResult/onsetCoverChecker.log
+        if grep -i -q "The Boolean function covers the specified on-set." "checkResult/onsetCoverChecker.log"; then
+            echo -e "\033[0;34mPass  \033[m  \033[0;32mPattern No.$i \033[0;34m(Diff)"
+        else
+            echo -e "\033[31m--- Check Fail ---\033[0m"
+            rm -f make.log
+            exit
+        fi
     fi
 done
 
 echo -e "\033[0;32mCongratulation!! You have passed all patterns. \033[0m"
 
-rm -f make.log
+rm -f make.log changeType.txt verifier writeProg changeType onsetCoverChecker.cpp onsetCoverChecker
