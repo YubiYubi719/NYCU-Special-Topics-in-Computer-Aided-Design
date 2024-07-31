@@ -16,7 +16,7 @@ CASEDIR = testcase/OpenCase
 OUTPUTDIR = output
 
 # change here!!
-CASEIDX = 1
+CASEIDX = 6
 TESTINPUT = input$(CASEIDX).txt
 TESTOUTPUT = output$(CASEIDX).txt
 
