@@ -31,8 +31,7 @@ public:
     // Member functions
     void readfile(string filename);
     void buildImplicationTable();
-    string int2Binary(int num);
-    pair<string,int> int2Binary(int num, int &maxLen); // also used to calculate max length of binaries
+    pair<string,int> int2Binary(int num);
     int binary2Int(string binary);
     bool growImplicant();
     int findDiff(string s1, string s2);
@@ -48,7 +47,6 @@ public:
     int varNum;
     vector<int> on_set;
     vector<int> dc_set;
-    int maxLen; // record maximum length of binaries
     vector<list<Implicant>> implicationTable; // ex: now we have an on-set pos 4
                                               // 4 = 0100 --> has one 1
                                               // it stores in implicationTable[1] as "0100"

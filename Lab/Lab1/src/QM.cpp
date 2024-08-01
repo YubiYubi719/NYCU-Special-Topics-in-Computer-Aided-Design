@@ -1,6 +1,6 @@
 #include "QM.h"
 
-QuineMcclusky::QuineMcclusky():varNum(0), maxLen(0){
+QuineMcclusky::QuineMcclusky():varNum(0){
     ;
 }
 
@@ -42,31 +42,9 @@ void QuineMcclusky::readfile(string filename){
     input.close();
 }
 
-string QuineMcclusky::int2Binary(int num){
-    if (num == 0) return "0";
-
-    // int originNum = num;
-    int oneNum = 0;
-    string binary;
-    while (num > 0) {
-        bool isOdd = num % 2;
-        if(isOdd){
-            binary = "1" + binary;
-            ++oneNum;
-        }
-        else{
-            binary = "0" + binary;
-        }
-        num /= 2;
-    }
-    return binary;
-}
-
-pair<string,int> QuineMcclusky::int2Binary(int num, int &maxLen){
+pair<string,int> QuineMcclusky::int2Binary(int num){
     if (num == 0) return {"0",0};
 
-    // int originNum = num;
-    int curLen = 0;
     int oneNum = 0;
     string binary;
     while (num > 0) {
@@ -78,10 +56,8 @@ pair<string,int> QuineMcclusky::int2Binary(int num, int &maxLen){
         else{
             binary = "0" + binary;
         }
-        ++curLen;
         num /= 2;
     }
-    maxLen = (curLen > maxLen)? curLen : maxLen;
     return {binary,oneNum};
 }
 
@@ -100,7 +76,7 @@ void QuineMcclusky::buildImplicationTable(){
     vector<int> positions(on_set);
     positions.insert(positions.end(),dc_set.begin(),dc_set.end());
     for(int pos:positions){
-        pair<string,int> binary = int2Binary(pos,maxLen);
+        pair<string,int> binary = int2Binary(pos);
         if((int)implicationTable.size() < binary.second+1){
             implicationTable.resize(binary.second+1);
         }
@@ -109,7 +85,7 @@ void QuineMcclusky::buildImplicationTable(){
     // Set all binaries' lengths to maxLen
     for(list<Implicant> &v:implicationTable){
         for(Implicant &curImp:v){
-            while((int)curImp.binary.length() < maxLen) curImp.binary = "0" + curImp.binary;
+            while((int)curImp.binary.length() < varNum) curImp.binary = "0" + curImp.binary;
         }
     }
 }
@@ -138,7 +114,7 @@ void QuineMcclusky::removeNonPrimeImplicant(list<Implicant> &curList){
 bool QuineMcclusky::growImplicant(){
     int combinationCount = 0;
     unordered_set<Implicant,Implicant::Hash> biggerImplicants;
-    for(int i = 0; i < (int)implicationTable.size()-1; ++i){
+    for(size_t i = 0; i < implicationTable.size()-1; ++i){
         if(implicationTable[i].empty()) continue;
         biggerImplicants.clear();
         for(auto iter1 = implicationTable[i].begin(); iter1 != implicationTable[i].end(); ++iter1){
@@ -166,14 +142,14 @@ vector<int> QuineMcclusky::implicant2Pos(string implicant){
     // ex: 01-- equals to 0100, 0101, 0110, 0111
     // corresponding integer are 4, 5, 6, 7
     vector<int> dc_idx;
-    for(int i = 0; i < (int)implicant.length(); ++i){
-        if(implicant[i] == '-') dc_idx.push_back(i); 
+    for(size_t i = 0; i < implicant.length(); ++i){
+        if(implicant[i] == '-') dc_idx.push_back((int)i); 
     }
-    int boxSize = pow(2,dc_idx.size());
+    int boxSize = 1 << dc_idx.size(); // pow(2,dc_idx.size());
     vector<string> binaries(boxSize,implicant);
     int curBox = 0;
     for(string &binary:binaries){
-        string box = int2Binary(curBox);
+        string box = int2Binary(curBox).first;
         while(box.length() < dc_idx.size()) box = "0" + box;
         int idx = 0;
         for(char &c:binary){
@@ -208,8 +184,8 @@ vector<string> QuineMcclusky::coverRemainingOnset(vector<int> remainOnset){
         vector<int> pos = implicant2Pos(imp);
         int val = 0;
         for(const int &p:pos){
-            vector<int>::iterator it = find(remainOnset.begin(), remainOnset.end(), p);
-            if(it != remainOnset.end()) val += 1 << ((remainOnset.size()-1) - (it-remainOnset.begin()));
+            vector<int>::iterator iter = find(remainOnset.begin(), remainOnset.end(), p);
+            if(iter != remainOnset.end()) val += 1 << ((remainOnset.size()-1) - (iter-remainOnset.begin()));
         }
         implicantCoverage.push_back(val);
         literalsCount.push_back(calLiteral(imp));
@@ -219,7 +195,7 @@ vector<string> QuineMcclusky::coverRemainingOnset(vector<int> remainOnset){
     int maxState = 1 << remainOnset.size();
     vector<int> dp(maxState, INT_MAX); // idx: covered onset, ex: if covered 0,1,3 onset, its idx is 3'b1011 = 11
                                        // value: minimum implicant number that can cover current onsets
-    vector<int> parent(maxState, -1); 
+    vector<int> parent(maxState, -1);
     vector<int> choice(maxState, -1);
     vector<int> literalsDp(maxState, INT_MAX);
     dp[0] = 0;
@@ -227,7 +203,7 @@ vector<string> QuineMcclusky::coverRemainingOnset(vector<int> remainOnset){
 
     for (int i = 0; i < maxState; ++i) {
         if (dp[i] == INT_MAX) continue; // can not cover the i_th onset
-        for (int j = 0; j < (int)nonEssPrimeImp.size(); ++j) {
+        for (size_t j = 0; j < nonEssPrimeImp.size(); ++j) {
             int nextCover = i | implicantCoverage[j];
             if (dp[i] + 1 < dp[nextCover] || (dp[i] + 1 == dp[nextCover] && (literalsDp[i] + literalsCount[j] < literalsDp[nextCover]))) {
                 dp[nextCover] = dp[i] + 1;
@@ -240,11 +216,11 @@ vector<string> QuineMcclusky::coverRemainingOnset(vector<int> remainOnset){
 
     // top-down to trace the choosed prime implicants
     vector<string> implicants;
-    int state = maxState - 1;
-    // cout << dp[state] << '\n';
-    while (parent[state] != -1) {
-        implicants.push_back(nonEssPrimeImp[choice[state]]);
-        state = parent[state];
+    int curState = maxState - 1;
+    // cout << dp[curState] << '\n';
+    while (parent[curState] != -1) {
+        implicants.push_back(nonEssPrimeImp[choice[curState]]);
+        curState = parent[curState];
     }
 
     return implicants;
@@ -289,11 +265,11 @@ void QuineMcclusky::columnCovering(){ // final answer stores in list<string> ess
     nonEssPrimeImp.insert(nonEssPrimeImp.end(),tmpnonEssImp.begin(),tmpnonEssImp.end());
 
     // check which on-set has not been covered by essential prime implicant yet
-    list<int> remainOnset(on_set.begin(), on_set.end());
+    unordered_set<int> remainOnset(on_set.begin(), on_set.end());
     for(string esspi:essPrimeImp){
         vector<int> coveredPos = implicant2Pos(esspi);
         for(int pos:coveredPos){
-            remainOnset.remove(pos);
+            remainOnset.erase(pos);
         }
     }
 

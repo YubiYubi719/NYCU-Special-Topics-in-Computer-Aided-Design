@@ -26,11 +26,11 @@ A'BC'DEF'H'
 A'BC'DE'FH'
 A'BC'D'E'G'H
 A'B'CDE'G'H
-A'B'CD'E'GH'
 A'B'CEFG'H
 A'B'C'D'EF'G'
+A'B'D'E'FGH'
 A'BDEGH'
 A'B'C'DGH'
-A'B'C'D'E'F
 A'B'C'EGH'
+A'C'D'E'FH
 literal=116
