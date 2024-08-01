@@ -88,4 +88,6 @@ done
 
 echo -e "\033[0;32mCongratulation!! You have passed all patterns. \033[0m"
 
+make clean > make.log
 rm -f make.log changeType.txt verifier writeProg changeType onsetCoverChecker.cpp onsetCoverChecker
+rm -rf checkResult

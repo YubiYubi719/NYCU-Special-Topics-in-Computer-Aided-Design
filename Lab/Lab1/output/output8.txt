@@ -1,6 +1,0 @@
-.p 1
-A'
-
-.mc 1
-A'
-literal=1
