@@ -6,7 +6,7 @@ int main(int argc, char* argv[]){
     clock_t start = clock();
     #endif
 
-    QuineMcclusky qm;
+    QuineMccluskey qm;
     qm.readfile(argv[1]);
     qm.buildImplicationTable();
     while(qm.growImplicant()){ };

@@ -1,18 +1,18 @@
 #include "QM.h"
 
-QuineMcclusky::QuineMcclusky():varNum(0){
+QuineMccluskey::QuineMccluskey():varNum(0){
     ;
 }
 
-QuineMcclusky::~QuineMcclusky(){
+QuineMccluskey::~QuineMccluskey(){
     ;
 }
 
-QuineMcclusky::ImpWithLit::ImpWithLit(string bin, int lit): binary(bin), literal(lit){
+QuineMccluskey::ImpWithLit::ImpWithLit(string bin, int lit): binary(bin), literal(lit){
     ;
 }
 
-void QuineMcclusky::readfile(string filename){
+void QuineMccluskey::readfile(string filename){
     ifstream input(filename);
     string curString;
     // variable num
@@ -42,7 +42,7 @@ void QuineMcclusky::readfile(string filename){
     input.close();
 }
 
-pair<string,int> QuineMcclusky::int2Binary(int num){
+pair<string,int> QuineMccluskey::int2Binary(int num){
     if (num == 0) return {"0",0};
 
     int oneNum = 0;
@@ -61,7 +61,7 @@ pair<string,int> QuineMcclusky::int2Binary(int num){
     return {binary,oneNum};
 }
 
-int QuineMcclusky::binary2Int(string binary){
+int QuineMccluskey::binary2Int(string binary){
     int result = 0;
     size_t len = binary.length();
     for(size_t i = 0; i < len; ++i){
@@ -72,7 +72,7 @@ int QuineMcclusky::binary2Int(string binary){
 }
 
 
-void QuineMcclusky::buildImplicationTable(){
+void QuineMccluskey::buildImplicationTable(){
     vector<int> positions(on_set);
     positions.insert(positions.end(),dc_set.begin(),dc_set.end());
     for(int pos:positions){
@@ -86,7 +86,7 @@ void QuineMcclusky::buildImplicationTable(){
     }
 }
 
-int QuineMcclusky::findDiff(const string &s1, const string &s2){
+int QuineMccluskey::findDiff(const string &s1, const string &s2){
     // if there is only one char different, return the different position
     // otherwise, return -1
     int diffNum = 0;
@@ -101,14 +101,14 @@ int QuineMcclusky::findDiff(const string &s1, const string &s2){
     return diffIdx;
 }
 
-void QuineMcclusky::removeNonPrimeImplicant(list<Implicant> &curList){
+void QuineMccluskey::removeNonPrimeImplicant(list<Implicant> &curList){
     for(auto iter = curList.begin(); iter != curList.end();){
         if(iter->combinable) iter = curList.erase(iter);
         else ++iter;
     }
 }
 
-bool QuineMcclusky::growImplicant(){
+bool QuineMccluskey::growImplicant(){
     int combinationCount = 0;
     unordered_set<Implicant,Implicant::Hash> biggerImplicants;
     for(size_t i = 0; i < implicationTable.size()-1; ++i){
@@ -134,7 +134,7 @@ bool QuineMcclusky::growImplicant(){
     return (combinationCount > 0)? true : false;
 }
 
-vector<int> QuineMcclusky::implicant2Pos(string implicant){
+vector<int> QuineMccluskey::implicant2Pos(string implicant){
     // change implicant to corresponding integer
     // ex: 01-- equals to 0100, 0101, 0110, 0111
     // corresponding integer are 4, 5, 6, 7
@@ -165,7 +165,7 @@ vector<int> QuineMcclusky::implicant2Pos(string implicant){
     return result;
 }
 
-int QuineMcclusky::calLiteral(const string &imp){
+int QuineMccluskey::calLiteral(const string &imp){
     int lit = 0;
     for(char c:imp){
         if(c != '-') ++lit; 
@@ -173,7 +173,7 @@ int QuineMcclusky::calLiteral(const string &imp){
     return lit;
 }
 
-vector<string> QuineMcclusky::coverRemainingOnset(vector<int> remainOnset){
+vector<string> QuineMccluskey::coverRemainingOnset(vector<int> remainOnset){
     // initialize coverage table and literal count of each nonEssPrimeImp
     vector<int> implicantCoverage;
     vector<int> literalsCount;
@@ -224,7 +224,7 @@ vector<string> QuineMcclusky::coverRemainingOnset(vector<int> remainOnset){
 }
 
 
-void QuineMcclusky::columnCovering(){ // final answer stores in list<string> essPrimeImp;
+void QuineMccluskey::columnCovering(){ // final answer stores in list<string> essPrimeImp;
     // Get all prime implicants inside implicant table
     for(list<Implicant> curList:implicationTable){
         if(curList.empty()) continue;
@@ -275,7 +275,7 @@ void QuineMcclusky::columnCovering(){ // final answer stores in list<string> ess
     if(!imps.empty()) essPrimeImp.insert(essPrimeImp.end(),imps.begin(),imps.end());
 }
 
-bool QuineMcclusky::ImpWithLit::impCmp(const ImpWithLit &imp1, const ImpWithLit &imp2){
+bool QuineMccluskey::ImpWithLit::impCmp(const ImpWithLit &imp1, const ImpWithLit &imp2){
     if(imp1.literal != imp2.literal) return imp1.literal > imp2.literal;
 
     int len = imp1.binary.length();
@@ -289,14 +289,14 @@ bool QuineMcclusky::ImpWithLit::impCmp(const ImpWithLit &imp1, const ImpWithLit 
     return imp1.binary > imp2.binary;
 }
 
-void QuineMcclusky::printImplicants(ofstream &output){
+void QuineMccluskey::printImplicants(ofstream &output){
     output << ".p " << primeImplicants.size() << '\n';
 
     vector<ImpWithLit> primeImp_with_literal;
     for(string imp:primeImplicants){
         primeImp_with_literal.emplace_back(imp,calLiteral(imp));
     }
-    sort(primeImp_with_literal.begin(), primeImp_with_literal.end(),QuineMcclusky::ImpWithLit::impCmp);
+    sort(primeImp_with_literal.begin(), primeImp_with_literal.end(),QuineMccluskey::ImpWithLit::impCmp);
     int printNum = 0;
     for(ImpWithLit imp:primeImp_with_literal){
         int cnt = 0;
@@ -316,14 +316,14 @@ void QuineMcclusky::printImplicants(ofstream &output){
     output << '\n';
 }
 
-void QuineMcclusky::printMinimumCovering(ofstream &output){
+void QuineMccluskey::printMinimumCovering(ofstream &output){
     output << ".mc " << essPrimeImp.size() << '\n';
     
     vector<ImpWithLit> imp_with_literal;
     for(string imp:essPrimeImp){
         imp_with_literal.emplace_back(imp,calLiteral(imp));
     }
-    sort(imp_with_literal.begin(), imp_with_literal.end(),QuineMcclusky::ImpWithLit::impCmp);
+    sort(imp_with_literal.begin(), imp_with_literal.end(),QuineMccluskey::ImpWithLit::impCmp);
     int totalLiteral = 0;
     for(ImpWithLit imp:imp_with_literal){
         int cnt = 0;
