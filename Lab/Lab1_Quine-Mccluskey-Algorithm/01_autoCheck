@@ -8,8 +8,11 @@ PATNUM=6
 compile() {
     make clean > make.log
     make >> make.log
+    echo -e "Generate verifier..."
     g++ -std=c++11 checker/verifier.cpp -o verifier
+    echo -e "Generate writeProg..."
     g++ -std=c++11 checker/writeProg.cpp -o writeProg
+    echo -e "Generate changeType..."
     g++ -std=c++11 checker/changeType.cpp -o changeType
 }
 
@@ -68,6 +71,7 @@ cleanup() {
 }
 
 # Main script execution
+echo -e "Compile necessory files..."
 compile
 prepare_directories
 
