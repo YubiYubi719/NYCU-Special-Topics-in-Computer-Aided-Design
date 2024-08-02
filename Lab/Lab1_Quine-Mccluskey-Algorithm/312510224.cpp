@@ -1,10 +1,8 @@
 #include "QM.h"
-// #define TESTMODE
-
 #include <ctime>
 
 int main(int argc, char* argv[]){
-    #ifdef TESTMODE
+    #if TESTMODE
     clock_t start = clock();
     #endif
 
@@ -20,7 +18,7 @@ int main(int argc, char* argv[]){
     qm.printMinimumCovering(output);
     output.close();
 
-    #ifdef TESTMODE
+    #if TESTMODE
     cout << (double)(clock()-start) / CLOCKS_PER_SEC * 1000 << "ms" << '\n';
     #endif
 

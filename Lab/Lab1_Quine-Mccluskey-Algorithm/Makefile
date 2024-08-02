@@ -3,6 +3,7 @@ CXX = g++
 CXXFLAGS = -I ./inc -std=c++11
 OPTFLAGS = -flto -funroll-loops -finline-functions -ffast-math -O3
 WARNINGS = -g -Wall
+DEFINE = -DTESTMODE=0
 
 # Source files and object files
 SRCDIR = src
@@ -31,7 +32,7 @@ $(OUTPUTDIR):
 	@mkdir $(OUTPUTDIR)
 
 $(TARGET): 312510224.cpp $(OBJS)
-	$(CXX) $(WARNINGS) $(CXXFLAGS) $(OPTFLAGS) $^ -o $@
+	$(CXX) $(WARNINGS) $(CXXFLAGS) $(OPTFLAGS) $(DEFINE) $^ -o $@
 
 $(OBJDIR)/%.o: $(SRCDIR)/%.cpp | $(OBJDIR)
 	$(CXX) $(WARNINGS) $(CXXFLAGS) $(OPTFLAGS) -c $< -o $@
