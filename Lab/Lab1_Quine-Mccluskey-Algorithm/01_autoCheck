@@ -1,93 +1,79 @@
 #!/bin/bash
 
 binaryName=312510224.o
+testCases=("Jimmy_Testcase" "OpenCase" "Zip_Testcase")
+PATNUM=6
 
-make clean > make.log
-make > make.log
+# Function to compile necessary files
+compile() {
+    make clean > make.log
+    make >> make.log
+    g++ -std=c++11 checker/verifier.cpp -o verifier
+    g++ -std=c++11 checker/writeProg.cpp -o writeProg
+    g++ -std=c++11 checker/changeType.cpp -o changeType
+}
 
-g++ -std=c++11 checker/verifier.cpp -o verifier
-g++ -std=c++11 checker/writeProg.cpp -o writeProg
-g++ -std=c++11 checker/changeType.cpp -o changeType
+# Function to clean and prepare directories
+prepare_directories() {
+    for dir in outputResult checkResult; do
+        [ -d "$dir" ] && rm -rf "$dir"
+        mkdir "$dir"
+    done
+}
 
-if [ -d "outputResult" ]; then
-    rm -rf outputResult
-fi
-if [ -d "checkResult" ]; then
+# Function to run tests for a given test case
+run_tests() {
+    local caseDir=$1
+    local casePath="outputResult/$caseDir"
+    mkdir "$casePath"
+    echo -e "\033[0;34m$caseDir\033[0m"
+    
+    for ((i = 1; i <= PATNUM; i++)); do
+        ./$binaryName "testcase/$caseDir/input${i}.txt" "$casePath/output${i}.txt"
+        ./verifier "testcase/$caseDir/tmp/output${i}.txt" "$casePath/output${i}.txt" > checkResult/check.log
+        
+        if grep -iq "congratulations, correct answer!" checkResult/check.log; then
+            echo -e "\033[0;34mPass  \033[m  \033[0;32mPattern No.$i \033[0m"
+        else
+            handle_failure "$casePath" "$caseDir" "$i"
+        fi
+    done
+}
+
+# Function to handle test failure
+handle_failure() {
+    local casePath=$1
+    local caseDir=$2
+    local patternNo=$3
+    
+    ./changeType "$casePath/output${patternNo}.txt"
+    ./writeProg "testcase/$caseDir/input${patternNo}.txt"
+    g++ -std=c++11 onsetCoverChecker.cpp -o onsetCoverChecker
+    ./onsetCoverChecker > checkResult/onsetCoverChecker.log
+    
+    if grep -iq "The Boolean function covers the specified on-set." checkResult/onsetCoverChecker.log; then
+        echo -e "\033[0;34mPass  \033[m  \033[0;32mPattern No.$patternNo \033[0;34m(Diff)\033[0m"
+    else
+        echo -e "\033[31m--- Check Fail ---\033[0m"
+        rm -f make.log
+        exit 1
+    fi
+}
+
+# Function to clean up after tests
+cleanup() {
+    make clean >> make.log
+    rm -f make.log changeType.txt verifier writeProg changeType onsetCoverChecker.cpp onsetCoverChecker
     rm -rf checkResult
-fi
-mkdir outputResult
-mkdir checkResult
-# Jimmy_Testcase
-mkdir outputResult/Jimmy_Testcase
-echo -e "\033[0;34mJimmy_Testcase\033[0m"
-for((i = 1; i <= 6; i = i+1)) do
-    ./$binaryName testcase/Jimmy_Testcase/input${i}.txt outputResult/Jimmy_Testcase/output${i}.txt
-    ./verifier testcase/Jimmy_Testcase/tmp/output${i}.txt outputResult/Jimmy_Testcase/output${i}.txt  > checkResult/check.log
-    if grep -i -q "congratulations, correct answer!" "checkResult/check.log"; then
-        echo -e "\033[0;34mPass  \033[m  \033[0;32mPattern No.$i \033[0m"
-    else
-        ./changeType outputResult/Jimmy_Testcase/output${i}.txt
-        ./writeProg testcase/Jimmy_Testcase/input${i}.txt
-        g++ -std=c++11 onsetCoverChecker.cpp -o onsetCoverChecker
-        ./onsetCoverChecker > checkResult/onsetCoverChecker.log
-        if grep -i -q "The Boolean function covers the specified on-set." "checkResult/onsetCoverChecker.log"; then
-            echo -e "\033[0;34mPass  \033[m  \033[0;32mPattern No.$i \033[0;34m(Diff)\033[0m"
-        else
-            echo -e "\033[31m--- Check Fail ---\033[0m"
-            rm -f make.log
-            exit
-        fi
-    fi
-done
+}
 
-# OpenCase
-mkdir outputResult/OpenCase
-echo -e "\033[0;34mOpenCase\033[0m"
-for((i = 1; i <= 6; i = i+1)) do
-    ./$binaryName testcase/OpenCase/input${i}.txt outputResult/OpenCase/output${i}.txt
-    ./verifier testcase/OpenCase/output${i}.txt outputResult/OpenCase/output${i}.txt  > checkResult/check.log
-    if grep -i -q "congratulations, correct answer!" "checkResult/check.log"; then
-        echo -e "\033[0;34mPass  \033[m  \033[0;32mPattern No.$i \033[0m"
-    else
-        ./changeType outputResult/OpenCase/output${i}.txt
-        ./writeProg testcase/OpenCase/input${i}.txt
-        g++ -std=c++11 onsetCoverChecker.cpp -o onsetCoverChecker
-        ./onsetCoverChecker > checkResult/onsetCoverChecker.log
-        if grep -i -q "The Boolean function covers the specified on-set." "checkResult/onsetCoverChecker.log"; then
-            echo -e "\033[0;34mPass  \033[m  \033[0;32mPattern No.$i \033[0;34m(Diff)\033[0m"
-        else
-            echo -e "\033[31m--- Check Fail ---\033[0m"
-            rm -f make.log
-            exit
-        fi
-    fi
-done
+# Main script execution
+compile
+prepare_directories
 
-# Zip_Testcase
-mkdir outputResult/Zip_Testcase
-echo -e "\033[0;34mZip_Testcase\033[0m"
-for((i = 1; i <= 6; i = i+1)) do
-    ./$binaryName testcase/Zip_Testcase/input${i}.txt outputResult/Zip_Testcase/output${i}.txt
-    ./verifier testcase/Zip_Testcase/tmp/output${i}.txt outputResult/Zip_Testcase/output${i}.txt  > checkResult/check.log
-    if grep -i -q "congratulations, correct answer!" "checkResult/check.log"; then
-        echo -e "\033[0;34mPass  \033[m  \033[0;32mPattern No.$i \033[0m"
-    else
-        ./changeType outputResult/Zip_Testcase/output${i}.txt
-        ./writeProg testcase/Zip_Testcase/input${i}.txt
-        g++ -std=c++11 onsetCoverChecker.cpp -o onsetCoverChecker
-        ./onsetCoverChecker > checkResult/onsetCoverChecker.log
-        if grep -i -q "The Boolean function covers the specified on-set." "checkResult/onsetCoverChecker.log"; then
-            echo -e "\033[0;34mPass  \033[m  \033[0;32mPattern No.$i \033[0;34m(Diff)\033[0m"
-        else
-            echo -e "\033[31m--- Check Fail ---\033[0m"
-            rm -f make.log
-            exit
-        fi
-    fi
+for testCase in "${testCases[@]}"; do
+    run_tests "$testCase"
 done
 
 echo -e "\033[0;32mCongratulation!! You have passed all patterns. \033[0m"
-
-make clean > make.log
-rm -f make.log changeType.txt verifier writeProg changeType onsetCoverChecker.cpp onsetCoverChecker
-rm -rf checkResult
+cleanup
