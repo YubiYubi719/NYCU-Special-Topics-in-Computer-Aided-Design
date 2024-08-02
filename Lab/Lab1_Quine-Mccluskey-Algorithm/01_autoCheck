@@ -74,7 +74,7 @@ for((i = 1; i <= 6; i = i+1)) do
     else
         ./changeType outputResult/Zip_Testcase/output${i}.txt
         ./writeProg testcase/Zip_Testcase/input${i}.txt
-        g++ -std=c++11 nsetCoverChecker.cpp -o onsetCoverChecker
+        g++ -std=c++11 onsetCoverChecker.cpp -o onsetCoverChecker
         ./onsetCoverChecker > checkResult/onsetCoverChecker.log
         if grep -i -q "The Boolean function covers the specified on-set." "checkResult/onsetCoverChecker.log"; then
             echo -e "\033[0;34mPass  \033[m  \033[0;32mPattern No.$i \033[0;34m(Diff)\033[0m"
