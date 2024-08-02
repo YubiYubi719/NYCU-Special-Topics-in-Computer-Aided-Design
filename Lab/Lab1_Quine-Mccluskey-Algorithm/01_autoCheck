@@ -1,22 +1,24 @@
 #!/bin/bash
 
 binaryName=312510224.o
-testCases=("Jimmy_Testcase" "OpenCase" "Zip_Testcase")
+testDir=("Jimmy_Testcase" "OpenCase" "Zip_Testcase")
 PATNUM=6
 
-# Function to compile necessary files
+# compile necessary files
 compile() {
     make clean > make.log
     make >> make.log
     echo -e "Generate verifier..."
     g++ -std=c++11 checker/verifier.cpp -o verifier
+
     echo -e "Generate writeProg..."
     g++ -std=c++11 checker/writeProg.cpp -o writeProg
+
     echo -e "Generate changeType..."
     g++ -std=c++11 checker/changeType.cpp -o changeType
 }
 
-# Function to clean and prepare directories
+# clean and prepare directories
 prepare_directories() {
     for dir in outputResult checkResult; do
         [ -d "$dir" ] && rm -rf "$dir"
@@ -24,7 +26,7 @@ prepare_directories() {
     done
 }
 
-# Function to run tests for a given test case
+# run tests for a given test case
 run_tests() {
     local caseDir=$1
     local casePath="outputResult/$caseDir"
@@ -43,7 +45,7 @@ run_tests() {
     done
 }
 
-# Function to handle test failure
+# failure handling
 handle_failure() {
     local casePath=$1
     local caseDir=$2
@@ -63,22 +65,22 @@ handle_failure() {
     fi
 }
 
-# Function to clean up after tests
 cleanup() {
     make clean >> make.log
     rm -f make.log changeType.txt verifier writeProg changeType onsetCoverChecker.cpp onsetCoverChecker
     rm -rf checkResult
 }
 
-# Main script execution
+# Main script
 echo -e "Compile necessory files..."
 compile
 prepare_directories
 
-for testCase in "${testCases[@]}"; do
+for testCase in "${testDir[@]}"; do
     run_tests "$testCase"
 done
 
+# Reminder
 echo -e "\033[0;32mCongratulation!! You have passed all patterns. \033[0m"
 echo -e "\033[31mReminder: \033[0m If the passed pattern has \033[0;34m(Diff)\033[0m at the end,"
 echo -e "           please check the golden .mc and literal inside testcase by yourself,"
