@@ -81,6 +81,6 @@ done
 
 echo -e "\033[0;32mCongratulation!! You have passed all patterns. \033[0m"
 echo -e "\033[31mReminder: \033[0m If the passed pattern has \033[0;34m(Diff)\033[0m at the end,"
-echo -e "           Please check the golden .mc and literal inside testcase by yourself."
-echo -e "           Since the checker only check whether your answer cover all the on-set or not."
+echo -e "           please check the golden .mc and literal inside testcase by yourself,"
+echo -e "           since the checker only check whether your answer cover all the on-set or not."
 cleanup
