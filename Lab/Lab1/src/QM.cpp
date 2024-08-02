@@ -48,7 +48,7 @@ pair<string,int> QuineMcclusky::int2Binary(int num){
     int oneNum = 0;
     string binary;
     while (num > 0) {
-        bool isOdd = num % 2;
+        bool isOdd = num & 1;
         if(isOdd){
             binary = "1" + binary;
             ++oneNum;
@@ -56,7 +56,7 @@ pair<string,int> QuineMcclusky::int2Binary(int num){
         else{
             binary = "0" + binary;
         }
-        num /= 2;
+        num = num >> 1; // num /= 2;
     }
     return {binary,oneNum};
 }
@@ -80,17 +80,13 @@ void QuineMcclusky::buildImplicationTable(){
         if((int)implicationTable.size() < binary.second+1){
             implicationTable.resize(binary.second+1);
         }
+        // Set all binaries' lengths to varNum
+        while((int)binary.first.length() < varNum) binary.first = "0" + binary.first;
         implicationTable[binary.second].emplace_back(binary.first);
-    }
-    // Set all binaries' lengths to maxLen
-    for(list<Implicant> &v:implicationTable){
-        for(Implicant &curImp:v){
-            while((int)curImp.binary.length() < varNum) curImp.binary = "0" + curImp.binary;
-        }
     }
 }
 
-int QuineMcclusky::findDiff(string s1, string s2){
+int QuineMcclusky::findDiff(const string &s1, const string &s2){
     // if there is only one char different, return the different position
     // otherwise, return -1
     int diffNum = 0;
@@ -98,10 +94,11 @@ int QuineMcclusky::findDiff(string s1, string s2){
     for(size_t i = 0; i < s1.length(); ++i){
         if(s1[i] == s2[i]) continue;
         ++diffNum;
+        if(diffNum > 1) return -1;
         diffIdx = i;
     }
 
-    return (diffNum == 1)? diffIdx : -1;
+    return diffIdx;
 }
 
 void QuineMcclusky::removeNonPrimeImplicant(list<Implicant> &curList){
@@ -243,7 +240,7 @@ void QuineMcclusky::columnCovering(){ // final answer stores in list<string> ess
     // put prime implicants into corresponding on-set
     for(string primeImplicant:primeImplicants){
         vector<int> pos = implicant2Pos(primeImplicant);
-        for(int p:pos){
+        for(const int &p:pos){
             if(mp.count(p)){
                 mp[p].push_back(primeImplicant);
             }
@@ -254,11 +251,12 @@ void QuineMcclusky::columnCovering(){ // final answer stores in list<string> ess
     unordered_set<string> tmpEssImp;
     unordered_set<string> tmpnonEssImp;
     for(pair<int,vector<string>> p:mp){
-        if(p.second.size() == 1) tmpEssImp.insert(p.second[0]);
-        else{
-            for(string imp:p.second){
-                tmpnonEssImp.insert(imp);
-            }
+        if(p.second.size() == 1){
+            tmpEssImp.insert(p.second[0]);
+            continue;
+        }
+        for(string imp:p.second){
+            tmpnonEssImp.insert(imp);
         }
     }
     essPrimeImp.insert(essPrimeImp.end(),tmpEssImp.begin(),tmpEssImp.end());

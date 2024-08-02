@@ -34,7 +34,7 @@ public:
     pair<string,int> int2Binary(int num);
     int binary2Int(string binary);
     bool growImplicant();
-    int findDiff(string s1, string s2);
+    int findDiff(const string &s1, const string &s2);
     void removeNonPrimeImplicant(list<Implicant> &curList);
     vector<int> implicant2Pos(string implicant);
     int calLiteral(const string &imp);
