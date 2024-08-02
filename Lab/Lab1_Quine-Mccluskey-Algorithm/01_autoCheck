@@ -7,7 +7,7 @@ PATNUM=6
 # compile necessary files
 compile() {
     make clean > make.log
-    make >> make.log
+    make > make.log
     echo -e "Generate verifier..."
     g++ -std=c++11 checker/verifier.cpp -o verifier
 
