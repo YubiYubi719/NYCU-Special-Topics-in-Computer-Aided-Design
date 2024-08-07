@@ -1,67 +1,69 @@
+/* 
+This verifier checks following terms:
+1. Prime implicants number
+2. Minimum number of implicant to cover whole on-set (minimum covering number)
+3. Literal count
+*/
 #include <iostream>
 #include <fstream>
 #include <string>
 #include <sstream>
 #include <vector>
-#include <unordered_map>
+#include <algorithm>
 using namespace std;
 
-int main(int argc, char* argv[]){
-    ifstream input1(argv[1]);
+// Golden ans
+int golden_implicantNum;
+int golden_minimumCoveringNum;
+vector<string> golden_mc;
+string golden_literal;
+
+// Test ans
+int test_implicantNum;
+int test_minimumCoveringNum;
+vector<string> test_mc;
+string test_literal;
+
+int calLiteral(const string &imp){
+    int litNum = 0;
+    for(const char &c:imp){
+        if(c == '\'') continue;
+        litNum++;
+    }
+    return litNum;
+}
+
+void readfile(string filename, int &impNum, int &mcNum, vector<string> &mcs, string &literal){
+    ifstream input(filename);
     string curStr;
-    while(input1 >> curStr){ if(curStr == ".mc") break; }
-    int num;
-    input1 >> num;
-    unordered_map<string,int> mp;
-    for(int i = 0; i < num; i++){
-        input1 >> curStr;
-        mp[curStr] = 1;
+    input >> curStr >> impNum;
+    while(input >> curStr){ if(curStr == ".mc") break; }
+    input >> mcNum;
+    mcs.resize(mcNum);
+    for(int i = 0; i < mcNum; i++){
+        input >> mcs[i];
     }
-    string literal_1;
-    input1 >> literal_1;
-    input1.close();
+    input >> literal;
+    input.close();
+}
 
-    ifstream input2(argv[2]);
-    while(input2 >> curStr){ if(curStr == ".mc") break; }
-    int num_test;
-    input2 >> num_test;
-    // check minimum covering count
-    if(num_test != num){
-        cout << "wrong answer." << '\n';
-        return 0;
+void Check(){
+    if(golden_implicantNum != test_implicantNum
+    || golden_minimumCoveringNum != test_minimumCoveringNum
+    || golden_literal != test_literal){
+        cout << "wrong answer.\n";
+        return;
     }
-
-    // check implicants
-    vector<string> imps(num_test);
-    for(int i = 0; i < num_test; i++){
-        input2 >> imps[i];
-    }
-    for(string imp:imps){
-        if(!mp.count(imp)){
-            cout << "wrong answer." << '\n';
-            return 0;
-        }
-        else{
-            mp[imp]--;
-        }
-    }
-    
-    for(pair<string,int> p:mp){
-        if(p.second != 0){
-            cout << "wrong answer." << '\n';
-            return 0;
-        }
-    }
-
-
-    string literal_2;
-    input2 >> literal_2;
-    if(literal_1 != literal_2){
-        cout << "wrong answer." << '\n';
-        return 0;
-    }
-    input2.close();
     cout << "congratulations, correct answer!" << '\n';
+}
+
+int main(int argc, char* argv[]){
+    // read golden ans
+    readfile(argv[1],golden_implicantNum,golden_minimumCoveringNum,golden_mc,golden_literal);
+    // read user's ans
+    readfile(argv[2],test_implicantNum,test_minimumCoveringNum,test_mc,test_literal);
+
+    Check();
 
     return 0;
 }

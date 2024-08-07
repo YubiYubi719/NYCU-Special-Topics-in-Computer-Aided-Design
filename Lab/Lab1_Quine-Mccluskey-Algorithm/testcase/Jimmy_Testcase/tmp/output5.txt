@@ -1,3 +1,4 @@
+.p 28
 .mc 23
 B'C'D'E'F'G
 B'C'DE'FG

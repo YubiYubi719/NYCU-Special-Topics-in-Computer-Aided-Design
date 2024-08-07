@@ -1,3 +1,4 @@
+.p 38
 .mc 13
 A'B'D'E'FGH'
 A'B'C'EGH'

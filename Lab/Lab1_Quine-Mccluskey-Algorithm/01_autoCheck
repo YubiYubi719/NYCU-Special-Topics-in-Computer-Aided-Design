@@ -38,15 +38,17 @@ run_tests() {
         ./verifier "testcase/$caseDir/tmp/output${i}.txt" "$casePath/output${i}.txt" > checkResult/check.log
         
         if grep -iq "congratulations, correct answer!" checkResult/check.log; then
-            echo -e "\033[0;34mPass  \033[m  \033[0;32mPattern No.$i \033[0m"
+            checkCovering "$casePath" "$caseDir" "$i"
         else
-            handle_failure "$casePath" "$caseDir" "$i"
+            echo -e "\033[31m--- Check Fail ---\033[0m"
+            cleanup
+            exit 1
         fi
     done
 }
 
 # failure handling
-handle_failure() {
+checkCovering() {
     local casePath=$1
     local caseDir=$2
     local patternNo=$3
@@ -57,10 +59,10 @@ handle_failure() {
     ./onsetCoverChecker > checkResult/onsetCoverChecker.log
     
     if grep -iq "The Boolean function covers the specified on-set." checkResult/onsetCoverChecker.log; then
-        echo -e "\033[0;34mPass  \033[m  \033[0;32mPattern No.$patternNo \033[0;34m(Diff)\033[0m"
+        echo -e "\033[0;34mPass  \033[m  \033[0;32mPattern No.$i \033[0m"
     else
         echo -e "\033[31m--- Check Fail ---\033[0m"
-        rm -f make.log
+        cleanup
         exit 1
     fi
 }
@@ -82,7 +84,8 @@ done
 
 # Reminder
 echo -e "\033[0;32mCongratulation!! You have passed all patterns. \033[0m"
-echo -e "\033[31mReminder: \033[0m If the passed pattern has \033[0;34m(Diff)\033[0m at the end,"
-echo -e "           please check the golden .mc and literal inside testcase by yourself,"
-echo -e "           since the checker only check whether your answer cover all the on-set or not."
+echo -e "\033[31mReminder: \033[0mThis checker does not check following terms:"
+echo -e "          1. Correction of prime implicants"
+echo -e "          2. Sequence of minimum covering"
+
 cleanup

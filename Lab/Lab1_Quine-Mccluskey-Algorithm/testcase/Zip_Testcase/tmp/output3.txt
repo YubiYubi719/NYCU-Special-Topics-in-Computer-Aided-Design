@@ -1,3 +1,4 @@
+.p 25
 .mc 18
 A'C'D'E'FH
 A'B'D'E'FGH'

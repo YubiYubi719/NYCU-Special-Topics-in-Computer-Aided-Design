@@ -1,3 +1,4 @@
+.p 16
 .mc 10
 B'C'DEF'
 B'CD'EF'

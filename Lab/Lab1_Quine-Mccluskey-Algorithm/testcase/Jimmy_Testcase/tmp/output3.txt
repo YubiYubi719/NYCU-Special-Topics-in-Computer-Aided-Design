@@ -1,3 +1,4 @@
+.p 3
 .mc 1
 D
 literal=1
