@@ -12,6 +12,7 @@
 #include <algorithm>
 #include <climits>
 #include "Implicant.h"
+#include "Table.h"
 using namespace std;
 
 class QuineMccluskey{
@@ -31,8 +32,6 @@ public:
     // Member functions
     void readfile(string filename);
     void buildImplicationTable();
-    pair<string,int> int2Binary(int num);
-    int binary2Int(string binary);
     bool growImplicant();
     int findDiff(const string &s1, const string &s2);
     void removeNonPrimeImplicant(list<Implicant> &curList);

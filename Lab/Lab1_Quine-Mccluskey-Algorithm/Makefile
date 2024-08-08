@@ -3,7 +3,7 @@ CXX = g++
 CXXFLAGS = -I ./inc -std=c++11
 OPTFLAGS = -flto -funroll-loops -finline-functions -ffast-math -O3
 WARNINGS = -g -Wall
-DEFINE = -DTESTMODE=false
+DEFINE = -DTESTMODE=true
 
 # Source files and object files
 SRCDIR = src

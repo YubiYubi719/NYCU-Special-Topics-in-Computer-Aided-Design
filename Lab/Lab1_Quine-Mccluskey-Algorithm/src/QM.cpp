@@ -1,5 +1,6 @@
 #include "QM.h"
 
+
 QuineMccluskey::QuineMccluskey():varNum(0){
     ;
 }
@@ -42,46 +43,15 @@ void QuineMccluskey::readfile(string filename){
     input.close();
 }
 
-pair<string,int> QuineMccluskey::int2Binary(int num){
-    if (num == 0) return {"0",0};
-
-    int oneNum = 0;
-    string binary;
-    while (num > 0) {
-        bool isOdd = num & 1;
-        if(isOdd){
-            binary = "1" + binary;
-            ++oneNum;
-        }
-        else{
-            binary = "0" + binary;
-        }
-        num = num >> 1; // num /= 2;
-    }
-    return {binary,oneNum};
-}
-
-int QuineMccluskey::binary2Int(string binary){
-    int result = 0;
-    size_t len = binary.length();
-    for(size_t i = 0; i < len; ++i){
-        result += (binary[(int)len-1-i]-'0') * (1 << i);
-    }
-
-    return result;
-}
-
-
 void QuineMccluskey::buildImplicationTable(){
     vector<int> positions(on_set);
     positions.insert(positions.end(),dc_set.begin(),dc_set.end());
     for(int pos:positions){
-        pair<string,int> binary = int2Binary(pos);
+        pair<string,int> binary = int2Binary[varNum][pos];
         if((int)implicationTable.size() < binary.second+1){
             implicationTable.resize(binary.second+1);
         }
-        // Set all binaries' lengths to varNum
-        while((int)binary.first.length() < varNum) binary.first = "0" + binary.first;
+        
         implicationTable[binary.second].emplace_back(binary.first);
     }
 }
@@ -146,8 +116,7 @@ vector<int> QuineMccluskey::implicant2Pos(string implicant){
     vector<string> binaries(boxSize,implicant);
     int curBox = 0;
     for(string &binary:binaries){
-        string box = int2Binary(curBox).first;
-        while(box.length() < dc_idx.size()) box = "0" + box;
+        string box = int2Binary[dc_idx.size()][curBox].first;
         int idx = 0;
         for(char &c:binary){
             if(c != '-') continue;
@@ -159,7 +128,7 @@ vector<int> QuineMccluskey::implicant2Pos(string implicant){
     
     vector<int> result(binaries.size());
     for(size_t i = 0; i < result.size(); ++i){
-        result[i] = binary2Int(binaries[i]);
+        result[i] = binary2Int.at(binaries[i]);
     }
 
     return result;
