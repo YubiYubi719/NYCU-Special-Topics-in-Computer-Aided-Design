@@ -5,6 +5,7 @@
 #include <unordered_map>
 using namespace std;
 
+//first: binary, second: number of "1" inside binary
 const vector<vector<pair<string,int>>> int2Binary = {
     {{"0",0}},
     {{"0",0},{"1",1}},

@@ -31,7 +31,7 @@ int binary2Int(string binary){
 }
 
 int main(){
-    ofstream output("inc/Table.h");
+    ofstream output("../inc/Table.h");
     output << "#ifndef INT2BINARY_h" << '\n';
     output << "#define INT2BINARY_h" << "\n";
 
@@ -39,6 +39,7 @@ int main(){
     output << "#include <vector>" << '\n';
     output << "#include <unordered_map>" << '\n';
     output << "using namespace std;" << "\n\n";
+    output << "//first: binary, second: number of \"1\" inside binary\n";
     output << "const vector<vector<pair<string,int>>> int2Binary = {" << '\n';
     for(int bitNum = 0; bitNum <= 8; bitNum++){
         int len = 1 << bitNum;

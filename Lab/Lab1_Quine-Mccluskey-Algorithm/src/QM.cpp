@@ -1,6 +1,5 @@
 #include "QM.h"
 
-
 QuineMccluskey::QuineMccluskey():varNum(0){
     ;
 }
@@ -112,8 +111,7 @@ vector<int> QuineMccluskey::implicant2Pos(string implicant){
     for(size_t i = 0; i < implicant.length(); ++i){
         if(implicant[i] == '-') dc_idx.push_back((int)i); 
     }
-    int boxSize = 1 << dc_idx.size(); // pow(2,dc_idx.size());
-    vector<string> binaries(boxSize,implicant);
+    vector<string> binaries(1 << dc_idx.size(),implicant); // pow(2,dc_idx.size());
     int curBox = 0;
     for(string &binary:binaries){
         string box = int2Binary[dc_idx.size()][curBox].first;
@@ -183,7 +181,6 @@ vector<string> QuineMccluskey::coverRemainingOnset(vector<int> remainOnset){
     // top-down to trace the choosed prime implicants
     vector<string> implicants;
     int curState = maxState - 1;
-    // cout << dp[curState] << '\n';
     while (parent[curState] != -1) {
         implicants.push_back(nonEssPrimeImp[choice[curState]]);
         curState = parent[curState];
