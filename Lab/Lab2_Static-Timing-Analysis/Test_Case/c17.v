@@ -1,6 +1,10 @@
 module c17 (N1, N2, N3, N6, N7, N22, N23);
+	// this is comment 1
 	input N1, N2, N3, N6, N7;
-	output N22, N23;
+/* this is comment 2
+	// hhhh /* hh */
+		hahaBananice3*/output N22, N23;
+	
 	wire n8, n9, n10, n11, n12;
 
 	NOR2X1 U8 (.A1(n8), .A2(n9), .ZN(N23));
