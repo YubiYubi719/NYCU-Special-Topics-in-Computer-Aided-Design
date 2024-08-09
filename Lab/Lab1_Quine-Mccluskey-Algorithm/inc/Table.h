@@ -1,5 +1,5 @@
-#ifndef INT2BINARY_h
-#define INT2BINARY_h
+#ifndef TABLE_H
+#define TABLE_H
 #include <string>
 #include <vector>
 #include <unordered_map>
