@@ -44,32 +44,22 @@ void STA::verilogParser(const string &filename){
         ss >> str;
         OP_Type op = OP_map.at(str);
         switch(op){
-            case OP_Type::input:{
-                cout << 1 << '\n';
+            case OP_Type::Net:{
+                string netType = str;
+                string netName;
+                while(ss >> netName){
+                    if(netName == "," || netName == ";") continue;
+                    if(netName.back() == ',' || netName.back() == ';') netName.erase(netName.length()-1,1);
+                    Net* net = new Net(netName,netType);
+                    netMap[netName] = net;
+                }
                 break;
             }
-            case OP_Type::output:{
-                cout << 2 << '\n';
-                break;
-            }
-            case OP_Type::wire:{
-                cout << 3 << '\n';
-
-                break;
-            }
-            case OP_Type::NANDX1:{
-                cout << 4 << '\n';
-
-                break;
-            }
-            case OP_Type::NOR2X1:{
-                cout << 5 << '\n';
-
-                break;
-            }
-            case OP_Type::INVX1:{
-                cout << 6 << '\n';
-
+            case OP_Type::Gate:{
+                string gateType = str;
+                string gateName;
+                //todo: use regular expression to extract gateName and input, output net of the gate
+                // ...
                 break;
             }
             default: break;

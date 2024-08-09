@@ -9,10 +9,16 @@ using namespace std;
 
 class STA{
 public:
+    // Constructor & Destructor
     STA();
     ~STA();
+
+    // Member functions
     string removeComment(string code);
     void verilogParser(const string &filename);
+
+    // Member variables
+    unordered_map<string,Net*> netMap;
 };
 
 #endif
