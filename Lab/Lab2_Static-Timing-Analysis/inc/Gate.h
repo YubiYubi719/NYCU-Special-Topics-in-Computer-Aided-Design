@@ -13,6 +13,10 @@ public:
 
     string type;
     string name;
+    double inputCap;
+    double riseTime, fallTime;
+    double riseTransition, fallTransition;
+    double outputLoad;
     vector<Net*> inputNet;
     Net* outputNet;
 };
