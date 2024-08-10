@@ -40,12 +40,11 @@ void STA::verilogParser(const string &filename){
     string opType;
     smatch match;
     while(getline(ss_code,curLine)){
-        // Extract type of the curLine
+        // Use regular expression to extract type of the curLine
         regex_search(curLine,match,regex("(output)|(input)|(wire)|(INVX1)|(NANDX1)|(NOR2X1)|(module)|(endmodule)"));
         opType = match.str();
-        OP_Type op = OP_map.at(opType);
         curLine = match.suffix().str();
-        switch(op){
+        switch(OP_map.at(opType)){
             case OP_Type::Net:{
                 string netName;
                 // Use regular expression to extract netName
@@ -67,13 +66,20 @@ void STA::verilogParser(const string &filename){
                 regex_search(curLine,match,regex("\\.ZN\\((.*?)\\)"));
                 Net* outputNet = netMap[match[1].str()];
 
+                Gate* gate = new Gate(gateName,opType,outputNet);
                 // Extract input of the gate
-                vector<Net*> inputNet;
-                while(regex_search(curLine,match,regex("\\.[AI]\\d*\\((.*?)\\)"))){
-                    inputNet.push_back(netMap[match[1].str()]);
-                    curLine = match.suffix().str();
+                if(opType == "NANDX1"|| opType == "NOR2X1"){
+                    while(regex_search(curLine,match,regex("\\.(A\\d*)\\((.*?)\\)"))){
+                        string pin = match[1].str();
+                        if(pin == "A1") gate->A1 = netMap[match[2].str()];
+                        if(pin == "A2") gate->A2 = netMap[match[2].str()];
+                        curLine = match.suffix().str();
+                    }
                 }
-                Gate* gate = new Gate(gateName,opType,inputNet,outputNet);
+                else{ // opType == "INVX1"
+                    regex_search(curLine,match,regex("\\.I\\d*\\((.*?)\\)"));
+                    gate->I = netMap[match[1].str()];
+                }
                 gateMap[gateName] = gate;
                 break;
             }
@@ -83,5 +89,5 @@ void STA::verilogParser(const string &filename){
 }
 
 void STA::libraryParser(const string &filename){
-    
+
 }

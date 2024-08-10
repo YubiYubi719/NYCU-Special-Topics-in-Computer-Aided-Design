@@ -9,7 +9,7 @@ class Net;
 class Gate{
 public:
     Gate();
-    Gate(string &gateName, string &gateType, vector<Net*> &iNet, Net* &oNet);
+    Gate(string &gateName, string &gateType, Net* &oNet);
     ~Gate();
 
     string name;
@@ -18,7 +18,7 @@ public:
     double riseTime, fallTime;
     double riseTransition, fallTransition;
     double outputLoad;
-    vector<Net*> inputNet;
+    Net *A1, *A2, *I; // input
     Net* outputNet;
 };
 
