@@ -16,9 +16,11 @@ public:
     // Member functions
     string removeComment(string code);
     void verilogParser(const string &filename);
+    void libraryParser(const string &filename);
 
     // Member variables
     unordered_map<string,Net*> netMap;
+    unordered_map<string,Gate*> gateMap;
 };
 
 #endif

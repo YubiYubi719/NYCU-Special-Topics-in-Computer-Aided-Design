@@ -36,33 +36,52 @@ void STA::verilogParser(const string &filename){
     string cleanCode = removeComment(commentedCode);
     cout << cleanCode << '\n';
     // Parse 
-    stringstream ss_code(cleanCode), ss;
-    string str;
+    stringstream ss_code(cleanCode);
+    string opType;
+    smatch match;
     while(getline(ss_code,curLine)){
-        ss.clear();
-        ss.str(curLine);
-        ss >> str;
-        OP_Type op = OP_map.at(str);
+        // Extract type of the curLine
+        regex_search(curLine,match,regex("(output)|(input)|(wire)|(INVX1)|(NANDX1)|(NOR2X1)|(module)|(endmodule)"));
+        opType = match.str();
+        OP_Type op = OP_map.at(opType);
+        curLine = match.suffix().str();
         switch(op){
             case OP_Type::Net:{
-                string netType = str;
                 string netName;
-                while(ss >> netName){
-                    if(netName == "," || netName == ";") continue;
-                    if(netName.back() == ',' || netName.back() == ';') netName.erase(netName.length()-1,1);
-                    Net* net = new Net(netName,netType);
+                // Use regular expression to extract netName
+                while(regex_search(curLine,match,regex("\\w+"))){
+                    netName = match.str();
+                    curLine = match.suffix().str();
+                    Net* net = new Net(netName,opType);
                     netMap[netName] = net;
                 }
                 break;
             }
             case OP_Type::Gate:{
-                string gateType = str;
-                string gateName;
-                //todo: use regular expression to extract gateName and input, output net of the gate
-                // ...
+                // Use regular expression to extract gateName
+                regex_search(curLine,match,regex("\\w+"));
+                string gateName = match.str();
+                curLine = match.suffix().str();
+
+                // Extract output net of the gate
+                regex_search(curLine,match,regex("\\.ZN\\((.*?)\\)"));
+                Net* outputNet = netMap[match[1].str()];
+
+                // Extract input of the gate
+                vector<Net*> inputNet;
+                while(regex_search(curLine,match,regex("\\.[AI]\\d*\\((.*?)\\)"))){
+                    inputNet.push_back(netMap[match[1].str()]);
+                    curLine = match.suffix().str();
+                }
+                Gate* gate = new Gate(gateName,opType,inputNet,outputNet);
+                gateMap[gateName] = gate;
                 break;
             }
             default: break;
         }
     }
+}
+
+void STA::libraryParser(const string &filename){
+    
 }

@@ -9,10 +9,11 @@ class Net;
 class Gate{
 public:
     Gate();
+    Gate(string &gateName, string &gateType, vector<Net*> &iNet, Net* &oNet);
     ~Gate();
 
-    string type;
     string name;
+    string type;
     double inputCap;
     double riseTime, fallTime;
     double riseTransition, fallTransition;

@@ -2,8 +2,9 @@ module c17 (N1, N2, N3, N6, N7, N22, N23);
 	// this is comment 1
 	input N1, N2, N3, N6, N7;
 /* this is comment 2
-	// hhhh /* hh */
-		hahaBananice3*/output N22, N23;
+	// hhhh /* hh 
+		hahaBananice3
+		*/output N22, N23;
 	
 	wire n8, n9, n10, n11, n12;
 
