@@ -72,7 +72,7 @@ void STA::verilogParser(const string &filename){
                     while(regex_search(curLine,match,regex("\\.(A\\d*)\\((.*?)\\)"))){
                         string pin = match[1].str();
                         if(pin == "A1") gate->A1 = netMap[match[2].str()];
-                        if(pin == "A2") gate->A2 = netMap[match[2].str()];
+                        else gate->A2 = netMap[match[2].str()];
                         curLine = match.suffix().str();
                     }
                 }
