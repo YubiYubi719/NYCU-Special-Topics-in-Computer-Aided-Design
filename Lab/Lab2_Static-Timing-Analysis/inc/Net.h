@@ -4,7 +4,7 @@
 #include <string>
 using namespace std;
 
-class Gate;
+class Cell;
 
 class Net{
 public:
@@ -14,8 +14,8 @@ public:
 
     string name;
     string type;
-    Gate* inputGate;
-    list<Gate*> outputGate;
+    Cell* inputCell;
+    list<Cell*> outputGate;
 };
 
 #endif

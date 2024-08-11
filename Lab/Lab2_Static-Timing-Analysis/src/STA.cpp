@@ -34,7 +34,7 @@ void STA::verilogParser(const string &filename){
     string commentedCode, curLine;
     while(getline(input,curLine)){ commentedCode += curLine + "\n"; }
     string cleanCode = removeComment(commentedCode);
-    // cout << cleanCode << '\n';
+    cout << cleanCode << '\n';
     // Parse 
     stringstream ss_code(cleanCode);
     string opType;
@@ -62,24 +62,24 @@ void STA::verilogParser(const string &filename){
                 string gateName = match.str();
                 curLine = match.suffix().str();
 
-                // Extract output net of the gate
-                regex_search(curLine,match,regex("\\.ZN\\((.*?)\\)"));
-                Net* outputNet = netMap[match[1].str()];
+                // Extract output net
+                regex_search(curLine,match,regex("ZN\\((.*?)\\)"));
+                Net* outputNet = netMap.at(match[1].str());
 
                 Cell* gate = new Cell(gateName,opType,outputNet);
-                // Extract input of the gate
+                // Extract input net
                 if(opType == "NANDX1"|| opType == "NOR2X1"){
                     gate->inputNet.resize(2);
-                    while(regex_search(curLine,match,regex("\\.(A\\d*)\\((.*?)\\)"))){
+                    while(regex_search(curLine,match,regex("(A\\d+)\\((.*?)\\)"))){
                         string pin = match[1].str();
-                        if(pin == "A1") gate->inputNet[0] = netMap[match[2].str()];
-                        else gate->inputNet[1] = netMap[match[2].str()];
+                        if(pin == "A1") gate->inputNet[0] = netMap.at(match[2].str());
+                        else gate->inputNet[1] = netMap.at(match[2].str());
                         curLine = match.suffix().str();
                     }
                 }
                 else{ // opType == "INVX1"
-                    regex_search(curLine,match,regex("\\.I\\d*\\((.*?)\\)"));
-                    gate->inputNet.push_back(netMap[match[1].str()]);
+                    regex_search(curLine,match,regex("I\\((.*?)\\)"));
+                    gate->inputNet.push_back(netMap.at(match[1].str()));
                 }
                 cellMap[gateName] = gate;
                 break;
@@ -171,5 +171,15 @@ void STA::libraryParser(const string &filename){
             }
         }
     }
-    
+}
+
+void STA::calOutputLoad(){
+    // Traverse all cell and calculate their output load
+    for(pair<string,Cell*> p : cellMap){
+        Cell* cell = p.second;
+        double outputLoad = 0.0;
+        for(Cell* outputCell:cell->outputNet->outputGate){
+
+        }
+    }
 }
