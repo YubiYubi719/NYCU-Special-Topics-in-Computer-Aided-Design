@@ -3,7 +3,8 @@
 Cell::Cell():
     riseTransition(0.0),
     fallTransition(0.0),
-    outputLoad(0.0){
+    outputLoad(0.0),
+    propagationDelay(0.0){
     ;
 }
 
@@ -16,6 +17,7 @@ Cell::Cell(
     riseTransition(0.0),
     fallTransition(0.0),
     outputLoad(0.0),
+    propagationDelay(0.0),
     outputNet(oNet){
     ;
 }

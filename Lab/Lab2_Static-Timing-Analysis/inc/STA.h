@@ -22,10 +22,16 @@ public:
     // Step 1
     void calOutputLoad();
     void dumpOutputLoad(string case_name);
+    // Step 2 & 3
+    double tableLookUp();
+    void topologicalSort();
+    void traverseNetList();
+
 
     // Member variables
     unordered_map<string,Net*> netMap;
     unordered_map<string,Cell*> cellMap;
+    vector<Cell*> Tsort_cells;
     Library cellLib;
 };
 

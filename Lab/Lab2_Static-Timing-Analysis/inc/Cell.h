@@ -16,6 +16,7 @@ public:
     string type;
     double riseTransition, fallTransition;
     double outputLoad;
+    double propagationDelay;
     vector<Net*> inputNet;
     Net* outputNet;
 };

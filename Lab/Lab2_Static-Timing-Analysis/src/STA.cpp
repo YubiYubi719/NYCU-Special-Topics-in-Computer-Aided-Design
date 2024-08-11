@@ -203,11 +203,18 @@ void STA::calOutputLoad(){
 void STA::dumpOutputLoad(string case_name){
     // ofstream output("312510224_" + case_name + "_load.txt");
     cout << "Step 1:" << '\n';
-    for(pair<string,Cell*> p : cellMap){
+    for(const pair<string,Cell*> &p : cellMap){
         Cell* cell = p.second;
         cout << cell->name << ' ' 
              << fixed << setprecision(6) 
              << cell->outputLoad << '\n';
     }
     // output.close();
+}
+
+void STA::topologicalSort(){
+    // Store all Cell* into Tsort_cells
+    for(const pair<string,Cell*> &p : cellMap){
+        Tsort_cells.push_back(p.second);
+    }
 }
