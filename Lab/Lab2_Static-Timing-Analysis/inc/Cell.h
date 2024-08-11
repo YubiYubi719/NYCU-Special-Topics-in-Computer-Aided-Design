@@ -14,8 +14,6 @@ public:
 
     string name;
     string type;
-    double inputCap;
-    double riseTime, fallTime;
     double riseTransition, fallTransition;
     double outputLoad;
     vector<Net*> inputNet;

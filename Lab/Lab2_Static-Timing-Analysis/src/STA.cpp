@@ -34,7 +34,7 @@ void STA::verilogParser(const string &filename){
     string commentedCode, curLine;
     while(getline(input,curLine)){ commentedCode += curLine + "\n"; }
     string cleanCode = removeComment(commentedCode);
-    cout << cleanCode << '\n';
+    // cout << cleanCode << '\n';
     // Parse 
     stringstream ss_code(cleanCode);
     string opType;
@@ -59,34 +59,37 @@ void STA::verilogParser(const string &filename){
             case OP_Type::Cell:{
                 // Extract gateName
                 regex_search(curLine,match,regex("\\w+"));
-                string gateName = match.str();
+                string cellName = match.str();
                 curLine = match.suffix().str();
 
                 // Extract output net
                 regex_search(curLine,match,regex("ZN\\((.*?)\\)"));
                 Net* outputNet = netMap.at(match[1].str());
 
-                Cell* gate = new Cell(gateName,opType,outputNet);
+                Cell* cell = new Cell(cellName,opType,outputNet);
                 // Extract input net
                 if(opType == "NANDX1"|| opType == "NOR2X1"){
-                    gate->inputNet.resize(2);
+                    cell->inputNet.resize(2);
                     while(regex_search(curLine,match,regex("(A\\d+)\\((.*?)\\)"))){
                         string pin = match[1].str();
-                        if(pin == "A1") gate->inputNet[0] = netMap.at(match[2].str());
-                        else gate->inputNet[1] = netMap.at(match[2].str());
+                        if(pin == "A1") cell->inputNet[0] = netMap.at(match[2].str());
+                        else cell->inputNet[1] = netMap.at(match[2].str());
+                        netMap.at(match[2].str())->outputCell.push_back(cell);
                         curLine = match.suffix().str();
                     }
                 }
                 else{ // opType == "INVX1"
                     regex_search(curLine,match,regex("I\\((.*?)\\)"));
-                    gate->inputNet.push_back(netMap.at(match[1].str()));
+                    cell->inputNet.push_back(netMap.at(match[1].str()));
+                    netMap.at(match[1].str())->outputCell.push_back(cell);
                 }
-                cellMap[gateName] = gate;
+                cellMap[cellName] = cell;
                 break;
             }
             default: break;
         }
     }
+    input.close();
 }
 
 void STA::libraryParser(const string &filename){
@@ -113,7 +116,7 @@ void STA::libraryParser(const string &filename){
 
         // Extract cell type
         else if(regex_search(curLine,match,regex("cell *\\((\\w+)\\)"))){
-            cellType = match.str();
+            cellType = match[1].str();
             CellInfo* cell_info = new CellInfo;
             if(cellType == "NOR2X1" || cellType == "NANDX1") cell_info->pinCap.resize(2);
             cellLib.cellMap[cellType] = cell_info;
@@ -121,7 +124,7 @@ void STA::libraryParser(const string &filename){
 
         // Extract input pin capacitance
         else if(regex_search(curLine,match,regex("pin\\(([AI]\\d*)\\)"))){
-            string pin = match.str();
+            string pin = match[1].str();
             // store whole pin-related information into one string
             /*
             Ex:
@@ -171,15 +174,40 @@ void STA::libraryParser(const string &filename){
             }
         }
     }
+    input.close();
 }
 
 void STA::calOutputLoad(){
-    // Traverse all cell and calculate their output load
+    // Traverse all cell 
     for(pair<string,Cell*> p : cellMap){
+        // Calculate output load of current cell
         Cell* cell = p.second;
         double outputLoad = 0.0;
-        for(Cell* outputCell:cell->outputNet->outputGate){
-
+        if(cell->outputNet->outputCell.empty()){
+            cell->outputLoad = 0.03;
+            continue;
         }
+        for(Cell* outputCell:cell->outputNet->outputCell){
+            for(size_t i = 0; i < outputCell->inputNet.size(); i++){
+                Net* net = outputCell->inputNet[i];
+                if(net == cell->outputNet){
+                    outputLoad += cellLib.cellMap.at(outputCell->type)->pinCap[i];
+                    break;
+                }
+            }
+        }
+        cell->outputLoad = outputLoad;
     }
+}
+
+void STA::dumpOutputLoad(string case_name){
+    // ofstream output("312510224_" + case_name + "_load.txt");
+    cout << "Step 1:" << '\n';
+    for(pair<string,Cell*> p : cellMap){
+        Cell* cell = p.second;
+        cout << cell->name << ' ' 
+             << fixed << setprecision(6) 
+             << cell->outputLoad << '\n';
+    }
+    // output.close();
 }

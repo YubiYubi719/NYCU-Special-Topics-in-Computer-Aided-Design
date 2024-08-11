@@ -21,6 +21,7 @@ public:
     void libraryParser(const string &filename);
     // Step 1
     void calOutputLoad();
+    void dumpOutputLoad(string case_name);
 
     // Member variables
     unordered_map<string,Net*> netMap;

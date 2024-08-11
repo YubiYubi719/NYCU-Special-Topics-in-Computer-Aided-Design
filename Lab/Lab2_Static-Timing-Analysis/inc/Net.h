@@ -1,7 +1,6 @@
 #ifndef NET_H
 #define NET_H
-#include <list>
-#include <string>
+#include <bits/stdc++.h>
 using namespace std;
 
 class Cell;
@@ -15,7 +14,7 @@ public:
     string name;
     string type;
     Cell* inputCell;
-    list<Cell*> outputGate;
+    list<Cell*> outputCell;
 };
 
 #endif
