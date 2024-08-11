@@ -4,7 +4,8 @@
 #include <regex>
 #include "Table.h"
 #include "Net.h"
-#include "Gate.h"
+#include "Cell.h"
+#include "Library.h"
 using namespace std;
 
 class STA{
@@ -20,7 +21,8 @@ public:
 
     // Member variables
     unordered_map<string,Net*> netMap;
-    unordered_map<string,Gate*> gateMap;
+    unordered_map<string,Cell*> cellMap;
+    Library cellLib;
 };
 
 #endif

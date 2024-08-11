@@ -1,16 +1,16 @@
-#ifndef GATE_H
-#define GATE_H
+#ifndef CELL_H
+#define CELL_H
 #include <vector>
 #include <string>
 using namespace std;
 
 class Net;
 
-class Gate{
+class Cell{
 public:
-    Gate();
-    Gate(string &gateName, string &gateType, Net* &oNet);
-    ~Gate();
+    Cell();
+    Cell(string &gateName, string &gateType, Net* &oNet);
+    ~Cell();
 
     string name;
     string type;
@@ -18,7 +18,7 @@ public:
     double riseTime, fallTime;
     double riseTransition, fallTransition;
     double outputLoad;
-    Net *A1, *A2, *I; // input
+    vector<Net*> inputNet;
     Net* outputNet;
 };
 

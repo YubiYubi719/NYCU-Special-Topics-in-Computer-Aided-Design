@@ -1,6 +1,6 @@
-#include "Gate.h"
+#include "Cell.h"
 
-Gate::Gate():
+Cell::Cell():
     inputCap(0.0),
     riseTime(0.0),
     fallTime(0.0),
@@ -10,7 +10,7 @@ Gate::Gate():
     ;
 }
 
-Gate::Gate(
+Cell::Cell(
     string &gateName, 
     string &gateType, 
     Net* &oNet
@@ -22,13 +22,10 @@ Gate::Gate(
     riseTransition(0.0),
     fallTransition(0.0),
     outputLoad(0.0),
-    outputNet(oNet),
-    A1(nullptr),
-    A2(nullptr),
-    I(nullptr){
+    outputNet(oNet){
     ;
 }
 
-Gate::~Gate(){
+Cell::~Cell(){
     ;
 }
