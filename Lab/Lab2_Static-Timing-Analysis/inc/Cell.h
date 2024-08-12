@@ -14,11 +14,16 @@ public:
 
     string name;
     string type;
+    double inputTransition, outputTransition;
     double riseTransition, fallTransition;
     double outputLoad;
-    double propagationDelay;
+    double delay; // intrinsic cell delay (i.e. propagation delay)
+    double arrivalTime; // sum of the total delay of the path from input til current cell
     vector<Net*> inputNet;
     Net* outputNet;
+    int inDegree;
+    Cell* prevCell; // record the gate of latest arrived signal
+    char value;
 };
 
 #endif

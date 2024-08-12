@@ -12,7 +12,8 @@ public:
     
     vector<double> index_1;
     vector<double> index_2;
-    unordered_map<string,CellInfo*> cellMap;
+    unordered_map<string,CellInfo*> cellMap; // first: cell type
+                                             // second: corresponding CellInfo
 };
 
 #endif

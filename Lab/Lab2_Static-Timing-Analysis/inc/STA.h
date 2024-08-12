@@ -2,7 +2,7 @@
 #define STA_H
 #include <bits/stdc++.h>
 #include <regex>
-#include "Table.h"
+#include "Util.h"
 #include "Net.h"
 #include "Cell.h"
 #include "Library.h"
@@ -22,16 +22,28 @@ public:
     // Step 1
     void calOutputLoad();
     void dumpOutputLoad(string case_name);
-    // Step 2 & 3
-    double tableLookUp();
+    // Step 2
+    double interpolate(
+        const double &inputTransition,
+        const double &outputLoad,
+        const vector<double> &table, 
+        const double &col_idx, 
+        const double &row_idx
+    );
+    double tableLookUp(Cell* cell, string tableType);
     void topologicalSort();
-    void traverseNetList();
+    void calInputTransitionTime(Cell* cell);
+    void calPropagationDelay();
+    void dumpDelay(string case_name);
+    // Step 3
+    void findLongestPath();
+    void findShortestPath();
 
 
     // Member variables
     unordered_map<string,Net*> netMap;
     unordered_map<string,Cell*> cellMap;
-    vector<Cell*> Tsort_cells;
+    vector<Cell*> t_sort;
     Library cellLib;
 };
 

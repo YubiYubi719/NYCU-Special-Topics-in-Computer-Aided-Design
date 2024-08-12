@@ -67,6 +67,7 @@ void STA::verilogParser(const string &filename){
                 Net* outputNet = netMap.at(match[1].str());
 
                 Cell* cell = new Cell(cellName,opType,outputNet);
+                outputNet->inputCell = cell;
                 // Extract input net
                 if(opType == "NANDX1"|| opType == "NOR2X1"){
                     cell->inputNet.resize(2);
@@ -78,7 +79,7 @@ void STA::verilogParser(const string &filename){
                         curLine = match.suffix().str();
                     }
                 }
-                else{ // opType == "INVX1"
+                else /* opType == "INVX1" */ {
                     regex_search(curLine,match,regex("I\\((.*?)\\)"));
                     cell->inputNet.push_back(netMap.at(match[1].str()));
                     netMap.at(match[1].str())->outputCell.push_back(cell);
@@ -212,9 +213,166 @@ void STA::dumpOutputLoad(string case_name){
     // output.close();
 }
 
+/*
+* @brief 
+* Sort the cells by their indegree and store the result into vector<Cell*> t_sort
+*/
 void STA::topologicalSort(){
-    // Store all Cell* into Tsort_cells
+    queue<Cell*> q;
     for(const pair<string,Cell*> &p : cellMap){
-        Tsort_cells.push_back(p.second);
+        Cell* cell = p.second;
+        for(Net* &net : cell->inputNet){
+            if(net->type != "input") cell->inDegree++;
+        }
+        if(cell->inDegree == 0){
+            q.push(cell);
+            t_sort.push_back(cell);
+        }
+        // cout << cell->name << " indegree: " << cell->inDegree << '\n';
+    }
+    while(!q.empty()){
+        Cell* topCell = q.front();
+        q.pop();
+        for(Cell* &adjCell:topCell->outputNet->outputCell){
+            adjCell->inDegree--;
+            if(adjCell->inDegree == 0){
+                q.push(adjCell);
+                t_sort.push_back(adjCell);
+            }
+        }
+    }
+    assert(t_sort.size() == cellMap.size());
+}
+
+double STA::interpolate(
+    const double &inputTransition,
+    const double &outputLoad,
+    const vector<double> &table, 
+    const double &col_idx, 
+    const double &row_idx
+){
+    size_t colSize = cellLib.index_1.size();
+    size_t rowSize = cellLib.index_2.size();
+    double col_1 = cellLib.index_1[col_idx-1];
+    double col_2 = cellLib.index_1[col_idx];
+    double row_1 = cellLib.index_2[row_idx-1];
+    double row_2 = cellLib.index_2[row_idx];
+
+    double col_1_row_1_val = table[(col_idx-1) + (row_idx-1) * colSize];
+    double col_2_row_1_val = table[(col_idx)   + (row_idx-1) * colSize];
+    double col_1_row_2_val = table[(col_idx-1) + (row_idx)   * colSize];
+    double col_2_row_2_val = table[(col_idx)   + (row_idx)   * colSize];
+
+    double A = col_1_row_1_val + (col_2_row_1_val-col_1_row_1_val) / (col_2-col_1) * (outputLoad-col_1);
+    double B = col_1_row_2_val + (col_2_row_2_val-col_1_row_2_val) / (col_2-col_1) * (outputLoad-col_1);
+
+    return A + (B-A) / (row_2-row_1) * (inputTransition-row_1);
+}
+
+double STA::tableLookUp(Cell* cell, string tableType){
+    size_t index_1_idx, index_2_idx;
+    //If larger, use binary search
+    size_t colSize = cellLib.index_1.size();
+    size_t rowSize = cellLib.index_2.size();
+    for(index_1_idx = 0; index_1_idx < colSize; index_1_idx++){
+        if(cellLib.index_1[index_1_idx] > cell->outputLoad) break;
+    }
+    for(index_2_idx = 0; index_2_idx < rowSize; index_2_idx++){
+        if(cellLib.index_2[index_2_idx] > cell->inputTransition) break;
+    }
+
+    const vector<double> &table = cellLib.cellMap.at(cell->type)->tables.at(tableType);
+    
+    if(index_1_idx == 0) index_1_idx = 1;
+    else if(index_1_idx == colSize) index_1_idx = colSize - 1;
+
+    if(index_2_idx == 0) index_2_idx = 1;
+    else if(index_2_idx == rowSize) index_2_idx = rowSize - 1;
+
+    return interpolate(cell->inputTransition,cell->outputLoad,table,index_1_idx,index_2_idx);
+}
+
+void STA::calInputTransitionTime(Cell* cell){
+    assert(cell->inputNet.size() == 1 || cell->inputNet.size() == 2);
+    // INVX1
+    if(cell->inputNet.size() == 1){
+        assert(cell->inputNet[0]->type != "output");
+        Cell* const &prevCell = cell->inputNet[0]->inputCell;
+        if(cell->inputNet[0]->type == "input"){
+            cell->inputTransition = 0.0;
+            cell->arrivalTime = 0.0;
+        }
+        else /*cell->inputNet[0]->type == "wire" */ {
+            cell->inputTransition = prevCell->outputTransition;
+            cell->arrivalTime = prevCell->arrivalTime + prevCell->delay + WIRE_DELAY;
+            cell->prevCell = prevCell;
+        }
+        return;
+    }
+
+    // NANDX1, NOR2X1
+    assert(cell->inputNet[0]->type != "output" && cell->inputNet[1]->type != "output");
+    if(cell->inputNet[0]->type == "input" && cell->inputNet[1]->type == "input"){
+        cell->inputTransition = 0.0;
+        cell->arrivalTime = 0.0;
+    }
+    else if(cell->inputNet[0]->type == "wire" && cell->inputNet[1]->type == "input"){
+        Cell* const &prevCell = cell->inputNet[0]->inputCell;
+        cell->inputTransition = prevCell->outputTransition;
+        cell->arrivalTime = prevCell->arrivalTime + prevCell->delay + WIRE_DELAY;
+        cell->prevCell = prevCell;
+    }
+    else if(cell->inputNet[0]->type == "input" && cell->inputNet[1]->type == "wire"){
+        Cell* const &prevCell = cell->inputNet[1]->inputCell;
+        cell->inputTransition = prevCell->outputTransition;
+        cell->arrivalTime = prevCell->arrivalTime + prevCell->delay + WIRE_DELAY;
+        cell->prevCell = prevCell;
+    }
+    else /* cell->inputNet[0]->type == "wire" && cell->inputNet[1]->type == "wire" */ {
+        Cell* const &prevCell_0 = cell->inputNet[0]->inputCell;
+        Cell* const &prevCell_1 = cell->inputNet[1]->inputCell;
+        if(prevCell_0->arrivalTime > prevCell_1->arrivalTime){
+            cell->inputTransition = prevCell_0->outputTransition;
+            cell->arrivalTime = prevCell_0->arrivalTime + prevCell_0->delay + WIRE_DELAY;
+            cell->prevCell = prevCell_0;
+        }
+        else /*prevCell_0->arrivalTime < prevCell_1->arrivalTime*/ {
+            cell->inputTransition = prevCell_1->outputTransition;
+            cell->arrivalTime = prevCell_1->arrivalTime + prevCell_1->delay + WIRE_DELAY;
+            cell->prevCell = prevCell_1;
+        }
+    }
+}
+
+void STA::calPropagationDelay(){
+    topologicalSort();
+    // Traverse netlist in topological order
+    for(Cell* &cell : t_sort){
+        calInputTransitionTime(cell);
+        // Calculate intrinsic delay and rise/fall transition time by look-up table
+        double riseDelay = tableLookUp(cell,"cell_rise");
+        double fallDelay = tableLookUp(cell,"cell_fall");
+        if(riseDelay > fallDelay){
+            cell->delay = riseDelay;
+            cell->outputTransition = tableLookUp(cell,"rise_transition");
+            cell->value = '1';
+        }
+        else /* riseDelay < fallDelay */ {
+            cell->delay = fallDelay;
+            cell->outputTransition = tableLookUp(cell,"fall_transition");
+            cell->value = '0';
+        }
+    }
+}
+
+void STA::dumpDelay(string case_name){
+    // ofstream output("312510224_" + case_name + "_delay.txt");
+    cout << "Step 2:\n";
+    for(Cell* &cell : t_sort){
+        cout << cell->name << " " 
+             << cell->value << " " 
+             << fixed << setprecision(6)
+             << cell->delay << " " 
+             << cell->outputTransition << '\n';
     }
 }

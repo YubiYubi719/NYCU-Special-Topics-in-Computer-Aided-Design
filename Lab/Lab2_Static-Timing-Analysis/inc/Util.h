@@ -1,8 +1,10 @@
-#ifndef TABLE_H
-#define TABLE_H
+#ifndef UTIL_H
+#define UTIL_H
 #include <unordered_map>
 #include <string>
 using namespace std;
+
+#define WIRE_DELAY  0.005
 
 enum class OP_Type{
     Net,
