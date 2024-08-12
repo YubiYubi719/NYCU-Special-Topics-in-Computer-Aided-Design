@@ -356,12 +356,12 @@ void STA::calPropagationDelay(){
         if(riseDelay > fallDelay){
             cell->delay = riseDelay;
             cell->outputTransition = tableLookUp(cell,"rise_transition");
-            cell->value = '1';
+            cell->worstCaseValue = '1';
         }
         else /* riseDelay < fallDelay */ {
             cell->delay = fallDelay;
             cell->outputTransition = tableLookUp(cell,"fall_transition");
-            cell->value = '0';
+            cell->worstCaseValue = '0';
         }
     }
 }
@@ -371,7 +371,7 @@ void STA::dumpDelay(string case_name){
     cout << "Step 2:\n";
     for(Cell* &cell : t_sort){
         cout << cell->name << " " 
-             << cell->value << " " 
+             << cell->worstCaseValue << " " 
              << fixed << setprecision(6)
              << cell->delay << " " 
              << cell->outputTransition << '\n';

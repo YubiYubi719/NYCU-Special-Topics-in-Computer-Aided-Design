@@ -10,7 +10,7 @@ Cell::Cell():
     arrivalTime(0.0),
     inDegree(0),
     prevCell(nullptr),
-    value(' '){
+    worstCaseValue(' '){
     ;
 }
 
@@ -30,7 +30,7 @@ Cell::Cell(
     outputNet(oNet),
     inDegree(0),
     prevCell(nullptr),
-    value(' '){
+    worstCaseValue(' '){
     ;
 }
 
