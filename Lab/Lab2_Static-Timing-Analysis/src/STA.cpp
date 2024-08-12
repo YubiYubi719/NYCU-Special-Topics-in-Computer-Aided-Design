@@ -411,13 +411,17 @@ void STA::pathFinding(){
 void STA::dumpPath(const string &case_name){
     // ofstream output(case_name);
     cout << "Step 3: " << '\n';
-    cout << "Longest delay = " << maxDelay << ", the path is: ";
+    cout << "Longest delay = " 
+         << fixed << setprecision(6)
+         << maxDelay << ", the path is: ";
     for(auto iter = longestPath.rbegin(); iter != longestPath.rend(); iter++){
         cout << (*iter)->name << " ";
         if(next(iter) != longestPath.rend()) cout << "-> ";
     }
     cout << '\n';
-    cout << "Shortest delay = " << minDelay << ", the path is: ";
+    cout << "Shortest delay = " 
+         << fixed << setprecision(6)
+         << minDelay << ", the path is: ";
     for(auto iter = shortestPath.rbegin(); iter != shortestPath.rend(); iter++){
         cout << (*iter)->name << " ";
         if(next(iter) != shortestPath.rend()) cout << "-> ";
