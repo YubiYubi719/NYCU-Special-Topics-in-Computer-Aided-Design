@@ -14,7 +14,8 @@ int main(int argc, char* argv[]){
     sta.dumpDelay(argv[1]);
 
     // Step 3
-    
+    sta.pathFinding();
+    sta.dumpPath(argv[1]);
 
     return 0;
 }

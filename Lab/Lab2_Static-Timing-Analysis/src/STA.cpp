@@ -65,11 +65,17 @@ void STA::verilogParser(const string &filename){
                 // Extract output net
                 regex_search(curLine,match,regex("ZN\\((.*?)\\)"));
                 Net* outputNet = netMap.at(match[1].str());
-
                 Cell* cell = new Cell(cellName,opType,outputNet);
                 outputNet->inputCell = cell;
+                if(outputNet->type == "output") outputCell.push_back(cell);
+
                 // Extract input net
-                if(opType == "NANDX1"|| opType == "NOR2X1"){
+                if(opType == "INVX1"){
+                    regex_search(curLine,match,regex("I\\((.*?)\\)"));
+                    cell->inputNet.push_back(netMap.at(match[1].str()));
+                    netMap.at(match[1].str())->outputCell.push_back(cell);
+                }
+                else /* opType == "NANDX1"|| opType == "NOR2X1" */ {
                     cell->inputNet.resize(2);
                     while(regex_search(curLine,match,regex("(A\\d+)\\((.*?)\\)"))){
                         string pin = match[1].str();
@@ -78,11 +84,6 @@ void STA::verilogParser(const string &filename){
                         netMap.at(match[2].str())->outputCell.push_back(cell);
                         curLine = match.suffix().str();
                     }
-                }
-                else /* opType == "INVX1" */ {
-                    regex_search(curLine,match,regex("I\\((.*?)\\)"));
-                    cell->inputNet.push_back(netMap.at(match[1].str()));
-                    netMap.at(match[1].str())->outputCell.push_back(cell);
                 }
                 cellMap[cellName] = cell;
                 break;
@@ -375,4 +376,51 @@ void STA::dumpDelay(string case_name){
              << cell->delay << " " 
              << cell->outputTransition << '\n';
     }
+}
+
+vector<Net*> STA::findPath(Cell* cell){
+    vector<Net*> path;
+    while(cell != nullptr){
+        path.push_back(cell->outputNet);
+        if(cell->prevCell == nullptr) path.push_back(cell->inputNet[0]);
+        cell = cell->prevCell;
+    }
+    return path;
+}
+
+void STA::pathFinding(){
+    maxDelay = DBL_MIN;
+    minDelay = DBL_MAX;
+    Cell *longestPathCell = nullptr, *shortestPathCell = nullptr;
+    for(Cell* const &cell : outputCell){
+        double outputDelay = cell->arrivalTime + cell->delay;
+        if(outputDelay > maxDelay){
+            maxDelay = outputDelay;
+            longestPathCell = cell;
+        }
+        if(outputDelay < minDelay){
+            minDelay = outputDelay;
+            shortestPathCell = cell;
+        }
+    }
+    assert(longestPathCell != nullptr && shortestPathCell != nullptr);
+    longestPath = findPath(longestPathCell);
+    shortestPath = findPath(shortestPathCell);
+}
+
+void STA::dumpPath(const string &case_name){
+    // ofstream output(case_name);
+    cout << "Step 3: " << '\n';
+    cout << "Longest delay = " << maxDelay << ", the path is: ";
+    for(auto iter = longestPath.rbegin(); iter != longestPath.rend(); iter++){
+        cout << (*iter)->name << " ";
+        if(next(iter) != longestPath.rend()) cout << "-> ";
+    }
+    cout << '\n';
+    cout << "Shortest delay = " << minDelay << ", the path is: ";
+    for(auto iter = shortestPath.rbegin(); iter != shortestPath.rend(); iter++){
+        cout << (*iter)->name << " ";
+        if(next(iter) != shortestPath.rend()) cout << "-> ";
+    }
+    cout << '\n';
 }

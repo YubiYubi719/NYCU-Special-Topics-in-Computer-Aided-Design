@@ -10,11 +10,15 @@ using namespace std;
 
 class STA{
 public:
-    // Constructor & Destructor
+//  *********************************
+//  *    Constructor & Destructor   *
+//  *********************************
     STA();
     ~STA();
 
-    // Member functions
+//  *********************************
+//  *        Member Functions       *
+//  *********************************
     string removeComment(string code);
     // Parser
     void verilogParser(const string &filename);
@@ -36,15 +40,21 @@ public:
     void calPropagationDelay();
     void dumpDelay(string case_name);
     // Step 3
-    void findLongestPath();
-    void findShortestPath();
+    vector<Net*> findPath(Cell* cell);
+    void pathFinding();
+    void dumpPath(const string &case_name);
 
-
-    // Member variables
+//  *********************************
+//  *        Member Variables       *
+//  *********************************
     unordered_map<string,Net*> netMap;
     unordered_map<string,Cell*> cellMap;
     vector<Cell*> t_sort;
     Library cellLib;
+    double maxDelay, minDelay;
+    vector<Cell*> outputCell;
+    vector<Net*> longestPath;
+    vector<Net*> shortestPath;
 };
 
 #endif
