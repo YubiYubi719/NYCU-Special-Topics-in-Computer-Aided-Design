@@ -19,13 +19,15 @@ public:
 //  *********************************
 //  *        Member Functions       *
 //  *********************************
-    string removeComment(string code);
     // Parser
-    void verilogParser(const string &filename);
-    void libraryParser(const string &filename);
+    size_t inputNum; // number of input net
+    string removeComment(string code);
+    void verilogParser(const string &netlistPath);
+    void libraryParser(const string &libraryPath);
+    void patternParser(const string &patternPath);
     // Step 1
     void calOutputLoad();
-    void dumpOutputLoad(string case_name);
+    void dumpOutputLoad();
     // Step 2
     double interpolate(
         const double &inputTransition,
@@ -38,17 +40,26 @@ public:
     void topologicalSort();
     void calInputTransitionTime(Cell* cell);
     void calPropagationDelay();
-    void dumpDelay(string case_name);
+    void dumpDelay();
     // Step 3
     vector<Net*> findPath(Cell* cell);
     void pathFinding();
-    void dumpPath(const string &case_name);
+    void dumpPath();
+    // Step 4
+    void calInputTransitionTime_Synthesis(Cell* cell);
+    void synthesis(const vector<char> &pattern);
+    void assignPattern();
+    void dumpGateInfo();
 
 //  *********************************
 //  *        Member Variables       *
 //  *********************************
+    string netlistName;
+    string patternName;
     unordered_map<string,Net*> netMap;
     unordered_map<string,Cell*> cellMap;
+    vector<string> patternOrder;
+    vector<vector<char>> patterns;
     vector<Cell*> t_sort;
     Library cellLib;
     double maxDelay, minDelay;

@@ -13,8 +13,9 @@ public:
 
     string name;
     string type;
+    char value;
     Cell* inputCell;
-    list<Cell*> outputCell;
+    vector<Cell*> outputCell;
 };
 
 #endif
