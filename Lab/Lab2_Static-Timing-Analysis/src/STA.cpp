@@ -49,7 +49,7 @@ void STA::verilogParser(const string &netlistPath){
         opType = match.str();
         curLine = match.suffix().str();
         switch(OP_map.at(opType)){
-            case OP_Type::Net:{
+            case NetType:{
                 string netName;
                 // Use regular expression to extract netName
                 while(regex_search(curLine,match,regex("\\w+"))){
@@ -61,7 +61,7 @@ void STA::verilogParser(const string &netlistPath){
                 }
                 break;
             }
-            case OP_Type::Cell:{
+            case CellType:{
                 // Extract gateName
                 regex_search(curLine,match,regex("\\w+"));
                 string cellName = match.str();
