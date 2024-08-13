@@ -16,9 +16,9 @@ OBJS = $(patsubst $(SRCDIR)/%.cpp,$(OBJDIR)/%.o,$(SRCS))
 CASEDIR = Test_Case
 
 # change here!!
-NETLIST = c17.v
+NETLIST = c432.v
 LIBRARY = test_lib.lib
-PATTERN = c17.pat
+PATTERN = c432.pat
 
 TARGET = 312510224
 

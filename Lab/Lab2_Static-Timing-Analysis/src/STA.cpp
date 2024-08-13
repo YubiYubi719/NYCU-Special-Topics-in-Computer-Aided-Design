@@ -223,10 +223,7 @@ void STA::calOutputLoad(){
         // Calculate output load of current cell
         Cell* cell = p.second;
         double outputLoad = 0.0;
-        if(cell->outputNet->outputCell.empty()){
-            cell->outputLoad = OUTPUT_LOAD;
-            continue;
-        }
+        if(cell->outputNet->type == "output") outputLoad += OUTPUT_LOAD;
         for(Cell* outputCell:cell->outputNet->outputCell){
             for(size_t i = 0; i < outputCell->inputNet.size(); i++){
                 Net* net = outputCell->inputNet[i];
@@ -333,13 +330,12 @@ void STA::calInputTransitionTime(Cell* cell){
     assert(cell->inputNet.size() == 1 || cell->inputNet.size() == 2);
     // INVX1
     if(cell->inputNet.size() == 1){
-        assert(cell->inputNet[0]->type != "output");
         Cell* const &prevCell = cell->inputNet[0]->inputCell;
         if(cell->inputNet[0]->type == "input"){
             cell->inputTransition = 0.0;
             cell->arrivalTime = 0.0;
         }
-        else /*cell->inputNet[0]->type == "wire" */ {
+        else /* cell->inputNet[0]->type == "wire" or "output" */ {
             cell->inputTransition = prevCell->outputTransition;
             cell->arrivalTime = prevCell->arrivalTime + prevCell->delay + WIRE_DELAY;
             cell->prevCell = prevCell;
@@ -348,24 +344,23 @@ void STA::calInputTransitionTime(Cell* cell){
     }
 
     // NANDX1, NOR2X1
-    assert(cell->inputNet[0]->type != "output" && cell->inputNet[1]->type != "output");
     if(cell->inputNet[0]->type == "input" && cell->inputNet[1]->type == "input"){
         cell->inputTransition = 0.0;
         cell->arrivalTime = 0.0;
     }
-    else if(cell->inputNet[0]->type == "wire" && cell->inputNet[1]->type == "input"){
+    else if(cell->inputNet[0]->type != "input" && cell->inputNet[1]->type == "input"){
         Cell* const &prevCell = cell->inputNet[0]->inputCell;
         cell->inputTransition = prevCell->outputTransition;
         cell->arrivalTime = prevCell->arrivalTime + prevCell->delay + WIRE_DELAY;
         cell->prevCell = prevCell;
     }
-    else if(cell->inputNet[0]->type == "input" && cell->inputNet[1]->type == "wire"){
+    else if(cell->inputNet[0]->type == "input" && cell->inputNet[1]->type != "input"){
         Cell* const &prevCell = cell->inputNet[1]->inputCell;
         cell->inputTransition = prevCell->outputTransition;
         cell->arrivalTime = prevCell->arrivalTime + prevCell->delay + WIRE_DELAY;
         cell->prevCell = prevCell;
     }
-    else /* cell->inputNet[0]->type == "wire" && cell->inputNet[1]->type == "wire" */ {
+    else /* cell->inputNet[0]->type != "input" && cell->inputNet[1]->type != "input" */ {
         Cell* const &prevCell_0 = cell->inputNet[0]->inputCell;
         Cell* const &prevCell_1 = cell->inputNet[1]->inputCell;
         // Choose the slower signal
@@ -471,7 +466,6 @@ void STA::calInputTransitionTime_Synthesis(Cell* cell){
     assert(cell->inputNet.size() == 1 || cell->inputNet.size() == 2);
     // INVX1
     if(cell->inputNet.size() == 1){
-        assert(cell->inputNet[0]->type != "output");
         if(cell->inputNet[0]->type == "input"){
             cell->inputTransition = 0.0;
             cell->arrivalTime = 0.0;
@@ -489,12 +483,11 @@ void STA::calInputTransitionTime_Synthesis(Cell* cell){
     // NANDX1, NOR2X1
     Net* A1 = cell->inputNet[0];
     Net* A2 = cell->inputNet[1];
-    assert(A1->type != "output" && A2->type != "output");
     if(A1->type == "input" && cell->inputNet[1]->type == "input"){
         cell->inputTransition = 0.0;
         cell->arrivalTime = 0.0;
     }
-    else if(A1->type == "wire" && A2->type == "input"){
+    else if(A1->type != "input" && A2->type == "input"){
         if(A2->value == cell->controlledValue){
             cell->inputTransition = 0.0;
             cell->arrivalTime = 0.0;
@@ -510,7 +503,7 @@ void STA::calInputTransitionTime_Synthesis(Cell* cell){
             cell->arrivalTime = prevCell->arrivalTime + prevCell->delay + WIRE_DELAY;
         }
     }
-    else if(A1->type == "input" && A2->type == "wire"){
+    else if(A1->type == "input" && A2->type != "input"){
         if(A1->value == cell->controlledValue){
             cell->inputTransition = 0.0;
             cell->arrivalTime = 0.0;
@@ -526,7 +519,7 @@ void STA::calInputTransitionTime_Synthesis(Cell* cell){
             cell->arrivalTime = prevCell->arrivalTime + prevCell->delay + WIRE_DELAY;
         }
     }
-    else /* A1->type == "wire" && A2->type == "wire" */ {
+    else /* A1->type != "input" && A2->type != "input" */ {
         if(A1->value == cell->controlledValue && A2->value == cell->controlledValue){
             Cell* const &prevCell_0 = A1->inputCell;
             Cell* const &prevCell_1 = A2->inputCell;
