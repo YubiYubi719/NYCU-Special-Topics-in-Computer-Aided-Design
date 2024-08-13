@@ -368,14 +368,17 @@ void STA::calInputTransitionTime(Cell* cell){
     else /* cell->inputNet[0]->type == "wire" && cell->inputNet[1]->type == "wire" */ {
         Cell* const &prevCell_0 = cell->inputNet[0]->inputCell;
         Cell* const &prevCell_1 = cell->inputNet[1]->inputCell;
-        if(prevCell_0->arrivalTime > prevCell_1->arrivalTime){
+        // Choose the slower signal
+        double arrival_0 = prevCell_0->arrivalTime + prevCell_0->delay + WIRE_DELAY;
+        double arrival_1 = prevCell_1->arrivalTime + prevCell_1->delay + WIRE_DELAY;
+        if(arrival_0 > arrival_1){
             cell->inputTransition = prevCell_0->outputTransition;
-            cell->arrivalTime = prevCell_0->arrivalTime + prevCell_0->delay + WIRE_DELAY;
+            cell->arrivalTime = arrival_0;
             cell->prevCell = prevCell_0;
         }
-        else /*prevCell_0->arrivalTime < prevCell_1->arrivalTime*/ {
+        else /* arrival_1 > arrival_0 */ {
             cell->inputTransition = prevCell_1->outputTransition;
-            cell->arrivalTime = prevCell_1->arrivalTime + prevCell_1->delay + WIRE_DELAY;
+            cell->arrivalTime = arrival_1;
             cell->prevCell = prevCell_1;
         }
     }
@@ -469,12 +472,12 @@ void STA::calInputTransitionTime_Synthesis(Cell* cell){
     // INVX1
     if(cell->inputNet.size() == 1){
         assert(cell->inputNet[0]->type != "output");
-        Cell* const &prevCell = cell->inputNet[0]->inputCell;
         if(cell->inputNet[0]->type == "input"){
             cell->inputTransition = 0.0;
             cell->arrivalTime = 0.0;
         }
         else /*cell->inputNet[0]->type == "wire" */ {
+            Cell* const &prevCell = cell->inputNet[0]->inputCell;
             cell->inputTransition = prevCell->outputTransition;
             cell->arrivalTime = prevCell->arrivalTime + prevCell->delay + WIRE_DELAY;
             cell->prevCell = prevCell;
@@ -528,13 +531,15 @@ void STA::calInputTransitionTime_Synthesis(Cell* cell){
             Cell* const &prevCell_0 = A1->inputCell;
             Cell* const &prevCell_1 = A2->inputCell;
             // Choose the smaller arrival time input
-            if(prevCell_0->arrivalTime < prevCell_1->arrivalTime){
+            double arrival_0 = prevCell_0->arrivalTime + prevCell_0->delay + WIRE_DELAY;
+            double arrival_1 = prevCell_1->arrivalTime + prevCell_1->delay + WIRE_DELAY;
+            if(arrival_0 < arrival_1){
                 cell->inputTransition = prevCell_0->outputTransition;
-                cell->arrivalTime = prevCell_0->arrivalTime + prevCell_0->delay + WIRE_DELAY;
+                cell->arrivalTime = arrival_0;
             }
-            else /*prevCell_1->arrivalTime < prevCell_0->arrivalTime*/ {
+            else /* arrival_1 < arrival_0 */ {
                 cell->inputTransition = prevCell_1->outputTransition;
-                cell->arrivalTime = prevCell_1->arrivalTime + prevCell_1->delay + WIRE_DELAY;
+                cell->arrivalTime = arrival_1;
             }
         }
         else if(A1->value == cell->controlledValue){
@@ -551,13 +556,15 @@ void STA::calInputTransitionTime_Synthesis(Cell* cell){
             Cell* const &prevCell_0 = A1->inputCell;
             Cell* const &prevCell_1 = A2->inputCell;
             // Choose the bigger arrival time input
-            if(prevCell_0->arrivalTime > prevCell_1->arrivalTime){
+            double arrival_0 = prevCell_0->arrivalTime + prevCell_0->delay + WIRE_DELAY;
+            double arrival_1 = prevCell_1->arrivalTime + prevCell_1->delay + WIRE_DELAY;
+            if(arrival_0 > arrival_1){
                 cell->inputTransition = prevCell_0->outputTransition;
-                cell->arrivalTime = prevCell_0->arrivalTime + prevCell_0->delay + WIRE_DELAY;
+                cell->arrivalTime = arrival_0;
             }
-            else /*prevCell_1->arrivalTime > prevCell_0->arrivalTime*/ {
+            else /*arrival_1 > arrival_0*/ {
                 cell->inputTransition = prevCell_1->outputTransition;
-                cell->arrivalTime = prevCell_1->arrivalTime + prevCell_1->delay + WIRE_DELAY;
+                cell->arrivalTime = arrival_1;
             }
         }
     }
@@ -588,15 +595,18 @@ void STA::synthesis(const vector<char> &pattern){
 }
 
 void STA::assignPattern(){
+    ofstream output("312510224_" + netlistName + "_gate_info.txt");
     for(const vector<char> &pattern:patterns){
         synthesis(pattern);
-        dumpGateInfo();
+        dumpGateInfo(output);
     }
+    output.close();
 }
 
-void STA::dumpGateInfo(){
-    ofstream output("312510224_" + netlistName + "_gate_info.txt");
-    for(Cell* cell : t_sort){
+void STA::dumpGateInfo(ofstream &output){
+    vector<Cell*> cellsInGateOrder(t_sort);
+    sort(cellsInGateOrder.begin(), cellsInGateOrder.end(), Cell::cmpWithGateOrder);
+    for(Cell* cell : cellsInGateOrder){
         output << cell->name  << " " 
                << cell->value << " "
                << fixed << setprecision(6)
@@ -604,5 +614,4 @@ void STA::dumpGateInfo(){
                << cell->outputTransition << '\n';
     }
     output << '\n';
-    output.close();
 }

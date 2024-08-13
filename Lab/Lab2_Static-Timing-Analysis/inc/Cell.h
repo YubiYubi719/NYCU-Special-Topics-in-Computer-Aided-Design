@@ -12,13 +12,15 @@ public:
     Cell(string &gateName, string &gateType, Net* &oNet);
     ~Cell();
 
+    static bool cmpWithGateOrder(const Cell* const &cell_1, const Cell* const &cell_2);
+
     string name;
     string type;
     double inputTransition, outputTransition;
     double riseTransition, fallTransition;
     double outputLoad;
     double delay; // intrinsic cell delay (i.e. propagation delay)
-    double arrivalTime; // sum of the total delay of the path from input til current cell
+    double arrivalTime; // sum of the total delay of the path from input til current cell input
     vector<Net*> inputNet;
     Net* outputNet;
     int inDegree;

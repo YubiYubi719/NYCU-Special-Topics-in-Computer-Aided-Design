@@ -49,7 +49,7 @@ public:
     void calInputTransitionTime_Synthesis(Cell* cell);
     void synthesis(const vector<char> &pattern);
     void assignPattern();
-    void dumpGateInfo();
+    void dumpGateInfo(ofstream &output);
 
 //  *********************************
 //  *        Member Variables       *

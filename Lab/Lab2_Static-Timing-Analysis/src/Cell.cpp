@@ -41,3 +41,7 @@ Cell::Cell(
 Cell::~Cell(){
     ;
 }
+
+bool Cell::cmpWithGateOrder(const Cell* const &cell_1, const Cell* const &cell_2){
+    return stoi(cell_1->name.substr(1)) < stoi(cell_2->name.substr(1));
+}
