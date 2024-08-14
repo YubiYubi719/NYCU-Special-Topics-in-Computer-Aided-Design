@@ -1,4 +1,5 @@
 #include "STA.h"
+#include <ctime>
 
 string netlistPath;
 string libraryPath;
@@ -14,6 +15,9 @@ void extractPath(int argc, char* argv[]){
 }
 
 int main(int argc, char* argv[]){
+    #if PRINTTIME
+    clock_t start = clock();
+    #endif
     STA sta;
     extractPath(argc,argv);
     sta.verilogParser(netlistPath);
@@ -34,6 +38,10 @@ int main(int argc, char* argv[]){
 
     // Step 4
     sta.assignPattern();
+
+    #if PRINTTIME
+    cout << (clock() - start) / CLOCKS_PER_SEC * 1000 << "ms" << '\n';
+    #endif
 
     return 0;
 }

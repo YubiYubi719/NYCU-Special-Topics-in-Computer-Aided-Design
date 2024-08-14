@@ -3,7 +3,7 @@ CXX = g++
 CXXFLAGS = -I ./inc -std=c++11
 OPTFLAGS = -flto -funroll-loops -finline-functions -ffast-math -O3
 WARNINGS = -g -Wall
-DEFINE = -DTESTMODE=true
+DEFINE = -DPRINTTIME=true
 
 # Source files and object files
 SRCDIR = src
@@ -16,9 +16,9 @@ OBJS = $(patsubst $(SRCDIR)/%.cpp,$(OBJDIR)/%.o,$(SRCS))
 CASEDIR = Test_Case
 
 # change here!!
-NETLIST = c432.v
+NETLIST = c123456.v
 LIBRARY = test_lib.lib
-PATTERN = c432.pat
+PATTERN = c123456.pat
 
 TARGET = 312510224
 
