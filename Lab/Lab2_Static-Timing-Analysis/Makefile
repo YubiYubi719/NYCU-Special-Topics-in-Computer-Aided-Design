@@ -1,6 +1,6 @@
 # compiler settings 
 CXX = g++
-CXXFLAGS = -I ./inc -std=c++11
+CXXFLAGS = -I ./inc -std=c++11 #-DNDEBUG
 OPTFLAGS = -flto -funroll-loops -finline-functions -ffast-math -O3
 WARNINGS = -g -Wall
 DEFINE = -DPRINTTIME=true

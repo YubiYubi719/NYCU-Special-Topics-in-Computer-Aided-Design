@@ -40,7 +40,7 @@ int main(int argc, char* argv[]){
     sta.assignPattern();
 
     #if PRINTTIME
-    cout << (clock() - start) / CLOCKS_PER_SEC * 1000 << "ms" << '\n';
+    cout << (double)(clock() - start) / CLOCKS_PER_SEC * 1000 << "ms" << '\n';
     #endif
 
     return 0;

@@ -18,7 +18,7 @@ Cell::Cell():
 Cell::Cell(
     string &gateName, 
     string &gateType, 
-    Net* &oNet
+    Net* oNet
 ) : name(gateName), 
     type(gateType), 
     inputTransition(0.0),
