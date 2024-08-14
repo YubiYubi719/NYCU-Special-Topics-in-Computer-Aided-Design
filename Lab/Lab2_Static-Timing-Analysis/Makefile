@@ -1,9 +1,9 @@
 # compiler settings 
 CXX = g++
-CXXFLAGS = -I ./inc -std=c++11 #-DNDEBUG
+CXXFLAGS = -I ./inc -std=c++11 -DPRINTTIME=true #-DNDEBUG 
 OPTFLAGS = -flto -funroll-loops -finline-functions -ffast-math -O3
 WARNINGS = -g -Wall
-DEFINE = -DPRINTTIME=true
+# DEFINE = -DPRINTTIME=true
 
 # Source files and object files
 SRCDIR = src

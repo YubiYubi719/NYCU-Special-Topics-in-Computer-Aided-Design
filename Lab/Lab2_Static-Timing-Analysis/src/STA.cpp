@@ -80,7 +80,7 @@ void STA::verilogParser(const string &netlistPath){
                     cell->inputNet.push_back(netMap.at(match[1].str()));
                     netMap.at(match[1].str())->outputCell.push_back(cell);
                 }
-                else /* opType == "NANDX1"|| opType == "NOR2X1" */ {
+                else /* opType == "NANDX1" || opType == "NOR2X1" */ {
                     cell->inputNet.resize(2);
                     while(regex_search(curLine,match,regex("(A\\d+)\\((.*?)\\)"))){
                         string pin = match[1].str();
@@ -99,6 +99,11 @@ void STA::verilogParser(const string &netlistPath){
     input.close();
 }
 
+/**
+ * @brief 
+ * hkfhsakdf
+ * @param filename test
+ */
 void STA::libraryParser(const string &filename){
     ifstream input(filename);
     string curLine;
