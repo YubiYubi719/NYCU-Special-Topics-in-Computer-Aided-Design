@@ -249,6 +249,7 @@ void STA::dumpOutputLoad(){
         output << cell->name << ' ' 
                << fixed << setprecision(6) 
                << cell->outputLoad << '\n';
+        if(cell->name == "G3766") cout << cell->outputLoad << '\n';
     }
     output.close();
 }
