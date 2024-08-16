@@ -45,7 +45,7 @@ void STA::verilogParser(const string &netlistPath){
     smatch match;
     while(getline(ss_code,curLine)){
         // Use regular expression to extract type of the curLine
-        regex_search(curLine,match,regex("(output)|(input)|(wire)|(INVX1)|(NANDX1)|(NOR2X1)|(module)|(endmodule)"));
+        regex_search(curLine,match,regex("(^output)|(^input)|(^wire)|(^INVX1)|(^NANDX1)|(^NOR2X1)|(^module)|(^endmodule)"));
         opType = match.str();
         curLine = match.suffix().str();
         switch(OP_map.at(opType)){
