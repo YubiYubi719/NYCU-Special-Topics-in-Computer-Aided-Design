@@ -9,7 +9,7 @@ class Net;
 class Cell{
 public:
     Cell();
-    Cell(string &gateName, string &gateType, Net* oNet);
+    Cell(string &gateName, string &gateType);
     ~Cell();
 
     static bool cmpWithGateOrder(const Cell* const &cell_1, const Cell* const &cell_2);

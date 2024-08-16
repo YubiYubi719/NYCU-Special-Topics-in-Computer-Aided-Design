@@ -10,13 +10,13 @@ STA::~STA(){
 
 string STA::removeComment(string code){
     // Remove //... that does not contain */
-    code = regex_replace(code,regex("//(?!.*\\*/).*\n"), "");
+    code = regex_replace(code, Comment_Pattern_1, "");
     
     // Remove /*...*/ cross multi-line
-    code = regex_replace(code, regex("/\\*[\\s\\S]*?\\*/"), "");
+    code = regex_replace(code, Comment_Pattern_2, "");
 
     // Remove //...
-    code = regex_replace(code, regex("//.*\n"), "");
+    code = regex_replace(code, Comment_Pattern_3, "");
 
     string result, curLine;
     stringstream ss(code);
@@ -43,60 +43,66 @@ void STA::verilogParser(const string &netlistPath){
     stringstream ss_code(cleanCode);
     string opType;
     smatch match;
+    string netName;
+    string cellName;
     while(getline(ss_code,curLine)){
-        // Use regular expression to extract type of the curLine
-        regex_search(curLine,match,regex("(^output)|(^input)|(^wire)|(^INVX1)|(^NANDX1)|(^NOR2X1)|(^module)|(^endmodule)"));
+        // Use regular expression to extract current type
+        regex_search(curLine,match,Type_Pattern);
         opType = match.str();
         curLine = match.suffix().str();
-        switch(OP_map.at(opType)){
-            case NetType:{
-                string netName;
-                // Use regular expression to extract netName
-                while(regex_search(curLine,match,regex("\\w+"))){
-                    if(opType == "input") inputNum++;
-                    netName = match.str();
-                    curLine = match.suffix().str();
-                    Net* net = new Net(netName,opType);
-                    netMap[netName] = net;
-                }
-                break;
-            }
-            case CellType:{
-                // Extract gateName
-                regex_search(curLine,match,regex("\\w+"));
-                string cellName = match.str();
+        if(opType == "output" || opType == "input" || opType == "wire"){
+            // Use regular expression to extract netName
+            while(regex_search(curLine,match,Word_Pattern)){
+                if(opType == "input") inputNum++;
+                netName = match.str();
                 curLine = match.suffix().str();
-
-                // Extract output net
-                regex_search(curLine,match,regex("ZN\\((.*?)\\)"));
-                Net* outputNet = netMap.at(match[1].str());
-                Cell* cell = new Cell(cellName,opType,outputNet);
-                outputNet->inputCell = cell;
-                if(outputNet->type == "output") outputCell.push_back(cell);
-
-                // Extract input net
-                if(opType == "INVX1"){
-                    regex_search(curLine,match,regex("I\\((.*?)\\)"));
-                    cell->inputNet.push_back(netMap.at(match[1].str()));
-                    netMap.at(match[1].str())->outputCell.push_back(cell);
-                }
-                else /* opType == "NANDX1" || opType == "NOR2X1" */ {
-                    cell->inputNet.resize(2);
-                    regex_search(curLine,match,regex("(A\\d+)\\((.*?)\\).*(A\\d+)\\((.*?)\\)"));
-                    string pin_1 = match[1].str();
-                    if(pin_1 == "A1") cell->inputNet[0] = netMap.at(match[2].str());
-                    else cell->inputNet[1] = netMap.at(match[2].str());
-                    netMap.at(match[2].str())->outputCell.push_back(cell);
-
-                    string pin_2 = match[3].str();
-                    if(pin_2 == "A1") cell->inputNet[0] = netMap.at(match[4].str());
-                    else cell->inputNet[1] = netMap.at(match[4].str());
-                    netMap.at(match[4].str())->outputCell.push_back(cell);
-                }
-                cellMap[cellName] = cell;
-                break;
+                Net* net = new Net(netName,opType);
+                netMap[netName] = net;
             }
-            default: break;
+        }
+        else if(opType == "INVX1" || opType == "NANDX1" || opType == "NOR2X1"){
+            // Extract cellName
+            regex_search(curLine,match,Word_Pattern);
+            cellName = match.str();
+            curLine = match.suffix().str();
+            Cell* cell = new Cell(cellName,opType);
+
+            // Extract output net
+            regex_search(curLine,match,OutputNet_Pattern);
+            Net* outputNet = netMap.at(match[1].str());
+            cell->outputNet = outputNet;
+            outputNet->inputCell = cell;
+            if(outputNet->type == "output") outputCell.push_back(cell);
+
+            // Extract input net
+            if(opType == "INVX1"){
+                regex_search(curLine,match,INVX1_InputNet_Pattern);
+                cell->inputNet.push_back(netMap.at(match[1].str()));
+                netMap.at(match[1].str())->outputCell.push_back(cell);
+            }
+            else /* opType == "NANDX1" || opType == "NOR2X1" */ {
+                cell->inputNet.resize(2);
+                regex_search(curLine,match,NANDX1_NOR2X1_InputNet_Pattern);
+
+                string pin_1 = match[1].str();
+                if(pin_1 == "A1"){
+                    cell->inputNet[0] = netMap.at(match[2].str());
+                }
+                else /* pin_1 == "A2" */ {
+                    cell->inputNet[1] = netMap.at(match[2].str());
+                }
+                netMap.at(match[2].str())->outputCell.push_back(cell);
+
+                string pin_2 = match[3].str();
+                if(pin_2 == "A1"){
+                    cell->inputNet[0] = netMap.at(match[4].str());
+                }
+                else /* pin_2 == "A2" */ {
+                    cell->inputNet[1] = netMap.at(match[4].str());
+                }
+                netMap.at(match[4].str())->outputCell.push_back(cell);
+            }
+            cellMap[cellName] = cell;
         }
     }
     input.close();

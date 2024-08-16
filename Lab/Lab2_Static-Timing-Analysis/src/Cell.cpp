@@ -17,8 +17,7 @@ Cell::Cell():
 
 Cell::Cell(
     string &gateName, 
-    string &gateType, 
-    Net* oNet
+    string &gateType
 ) : name(gateName), 
     type(gateType), 
     inputTransition(0.0),
@@ -28,7 +27,6 @@ Cell::Cell(
     outputLoad(0.0),
     delay(0.0),
     arrivalTime(0.0),
-    outputNet(oNet),
     inDegree(0),
     prevCell(nullptr),
     worstCaseValue(' '),
