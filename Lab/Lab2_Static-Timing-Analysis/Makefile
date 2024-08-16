@@ -1,6 +1,6 @@
 # compiler settings 
 CXX = g++
-CXXFLAGS = -I ./inc -std=c++11 -DPRINTTIME=true #-DNDEBUG 
+CXXFLAGS = -I ./inc -std=c++11 -DPRINTTIME=true -DNDEBUG 
 OPTFLAGS = -flto -funroll-loops -finline-functions -O3 -ffast-math
 WARNINGS = -g -Wall
 # DEFINE = -DPRINTTIME=true
@@ -28,7 +28,7 @@ $(OBJDIR):
 	@mkdir $(OBJDIR)
 
 $(TARGET): main.cpp $(OBJS)
-	$(CXX) $(WARNINGS) $(CXXFLAGS) $(OPTFLAGS) $(DEFINE) $^ -o $@
+	$(CXX) $(WARNINGS) $(CXXFLAGS) $(OPTFLAGS) $^ -o $@
 
 $(OBJDIR)/%.o: $(SRCDIR)/%.cpp | $(OBJDIR)
 	$(CXX) $(WARNINGS) $(CXXFLAGS) $(OPTFLAGS) -c $< -o $@
