@@ -1,7 +1,7 @@
 # compiler settings 
 CXX = g++
 CXXFLAGS = -I ./inc -std=c++11 -DPRINTTIME=true #-DNDEBUG 
-OPTFLAGS = -flto -funroll-loops -finline-functions -ffast-math -O3
+OPTFLAGS = -flto -funroll-loops -finline-functions -O3 -ffast-math
 WARNINGS = -g -Wall
 # DEFINE = -DPRINTTIME=true
 
@@ -16,9 +16,9 @@ OBJS = $(patsubst $(SRCDIR)/%.cpp,$(OBJDIR)/%.o,$(SRCS))
 CASEDIR = Test_Case
 
 # change here!!
-NETLIST = c123456.v
+NETLIST = c432.v
 LIBRARY = test_lib.lib
-PATTERN = c123456.pat
+PATTERN = c432.pat
 
 TARGET = 312510224
 
