@@ -45,6 +45,7 @@ void STA::verilogParser(const string &netlistPath){
     smatch match;
     string netName;
     string cellName;
+    string pin;
     while(getline(ss_code,curLine)){
         // Use regular expression to extract current type
         regex_search(curLine,match,Type_Pattern);
@@ -84,23 +85,25 @@ void STA::verilogParser(const string &netlistPath){
                 cell->inputNet.resize(2);
                 regex_search(curLine,match,NANDX1_NOR2X1_InputNet_Pattern);
 
-                string pin_1 = match[1].str();
-                if(pin_1 == "A1"){
-                    cell->inputNet[0] = netMap.at(match[2].str());
+                pin = match[1].str();
+                netName = match[2].str();
+                if(pin == "A1"){
+                    cell->inputNet[0] = netMap.at(netName);
                 }
-                else /* pin_1 == "A2" */ {
-                    cell->inputNet[1] = netMap.at(match[2].str());
+                else /* pin == "A2" */ {
+                    cell->inputNet[1] = netMap.at(netName);
                 }
-                netMap.at(match[2].str())->outputCell.push_back(cell);
+                netMap.at(netName)->outputCell.push_back(cell);
 
-                string pin_2 = match[3].str();
-                if(pin_2 == "A1"){
-                    cell->inputNet[0] = netMap.at(match[4].str());
+                pin = match[3].str();
+                netName = match[4].str();
+                if(pin == "A1"){
+                    cell->inputNet[0] = netMap.at(netName);
                 }
-                else /* pin_2 == "A2" */ {
-                    cell->inputNet[1] = netMap.at(match[4].str());
+                else /* pin == "A2" */ {
+                    cell->inputNet[1] = netMap.at(netName);
                 }
-                netMap.at(match[4].str())->outputCell.push_back(cell);
+                netMap.at(netName)->outputCell.push_back(cell);
             }
             cellMap[cellName] = cell;
         }
