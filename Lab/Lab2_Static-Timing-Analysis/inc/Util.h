@@ -18,6 +18,14 @@ const regex OutputNet_Pattern("ZN\\((.*?)\\)");
 const regex INVX1_InputNet_Pattern("I\\((.*?)\\)");
 const regex NANDX1_NOR2X1_InputNet_Pattern("(A\\d+)\\((.*?)\\).*(A\\d+)\\((.*?)\\)");
 
+const regex Index_1_Pattern("index_1");
+const regex Index_2_Pattern("index_2");
+const regex Float_Pattern("\\d+\\.\\d+");
+const regex Cell_Pattern("cell *\\((\\w+)\\)");
+const regex Pin_Pattern("pin\\(([AI]\\d*)\\)");
+const regex Capacitance_Pattern("capacitance *: *(\\d+\\.\\d+);");
+const regex Table_Pattern("(cell_rise)|(cell_fall)|(rise_transition)|(fall_transition)");
+
 using FunctionPtr = char (*)(pair<char,char>);
 char NAND_truthTable(pair<char,char> p);
 char NOR_truthTable(pair<char,char> p);

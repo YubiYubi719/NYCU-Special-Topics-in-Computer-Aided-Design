@@ -122,23 +122,23 @@ void STA::libraryParser(const string &filename){
     stringstream ss(libStr);
     while(getline(ss,curLine)){
         // Extract index_1
-        if(regex_search(curLine,regex("index_1"))){
-            while(regex_search(curLine,match,regex("\\d+\\.\\d+"))){
+        if(regex_search(curLine,Index_1_Pattern)){
+            while(regex_search(curLine,match,Float_Pattern)){
                 cellLib.index_1.push_back(stod(match.str()));
                 curLine = match.suffix().str();
             }
         }
 
         // Extract index_2
-        else if(regex_search(curLine,regex("index_2"))){
-            while(regex_search(curLine,match,regex("\\d+\\.\\d+"))){
+        else if(regex_search(curLine,Index_2_Pattern)){
+            while(regex_search(curLine,match,Float_Pattern)){
                 cellLib.index_2.push_back(stod(match.str()));
                 curLine = match.suffix().str();
             }
         }
 
         // Extract cell type
-        else if(regex_search(curLine,match,regex("cell *\\((\\w+)\\)"))){
+        else if(regex_search(curLine,match,Cell_Pattern)){
             cellType = match[1].str();
             CellInfo* cell_info = new CellInfo;
             if(cellType == "NOR2X1" || cellType == "NANDX1") cell_info->pinCap.resize(2);
@@ -146,7 +146,7 @@ void STA::libraryParser(const string &filename){
         }
 
         // Extract input pin capacitance
-        else if(regex_search(curLine,match,regex("pin\\(([AI]\\d*)\\)"))){
+        else if(regex_search(curLine,match,Pin_Pattern)){
             string pin = match[1].str();
             // store whole pin-related information into one string
             /*
@@ -162,14 +162,14 @@ void STA::libraryParser(const string &filename){
                 pinStr += curLine;
                 if(curLine.back() == '}') break;
             }
-            regex_search(pinStr,match,regex("capacitance *: *(\\d+\\.\\d+);"));
+            regex_search(pinStr,match,Capacitance_Pattern);
             if(pin == "A1")      cellLib.cellMap[cellType]->pinCap[0] = stod(match[1].str());
             else if(pin == "A2") cellLib.cellMap[cellType]->pinCap[1] = stod(match[1].str());
             else /*pin == "I"*/  cellLib.cellMap[cellType]->pinCap.push_back(stod(match[1].str()));
         }
 
         // extract timing information
-        else if(regex_search(curLine,match,regex("(cell_rise)|(cell_fall)|(rise_transition)|(fall_transition)"))){
+        else if(regex_search(curLine,match,Table_Pattern)){
             string timeType = match.str();
             // store whole time-related information into one string
             /*
@@ -191,7 +191,7 @@ void STA::libraryParser(const string &filename){
                 if(curLine.back() == '}') break;
             }
             // Store timing table
-            while(regex_search(timeStr,match,regex("\\d+\\.\\d+"))){
+            while(regex_search(timeStr,match,Float_Pattern)){
                 cellLib.cellMap[cellType]->tables[timeType].push_back(stod(match.str()));
                 timeStr = match.suffix().str();
             }
