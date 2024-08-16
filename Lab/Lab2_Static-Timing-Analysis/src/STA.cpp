@@ -82,13 +82,16 @@ void STA::verilogParser(const string &netlistPath){
                 }
                 else /* opType == "NANDX1" || opType == "NOR2X1" */ {
                     cell->inputNet.resize(2);
-                    while(regex_search(curLine,match,regex("(A\\d+)\\((.*?)\\)"))){
-                        string pin = match[1].str();
-                        if(pin == "A1") cell->inputNet[0] = netMap.at(match[2].str());
-                        else cell->inputNet[1] = netMap.at(match[2].str());
-                        netMap.at(match[2].str())->outputCell.push_back(cell);
-                        curLine = match.suffix().str();
-                    }
+                    regex_search(curLine,match,regex("(A\\d+)\\((.*?)\\).*(A\\d+)\\((.*?)\\)"));
+                    string pin_1 = match[1].str();
+                    if(pin_1 == "A1") cell->inputNet[0] = netMap.at(match[2].str());
+                    else cell->inputNet[1] = netMap.at(match[2].str());
+                    netMap.at(match[2].str())->outputCell.push_back(cell);
+
+                    string pin_2 = match[3].str();
+                    if(pin_2 == "A1") cell->inputNet[0] = netMap.at(match[4].str());
+                    else cell->inputNet[1] = netMap.at(match[4].str());
+                    netMap.at(match[4].str())->outputCell.push_back(cell);
                 }
                 cellMap[cellName] = cell;
                 break;
