@@ -32,6 +32,7 @@ void STA::verilogParser(const string &netlistPath){
     // Extract netlist name from its path
     size_t pos = netlistPath.find_last_of("/\\");
     netlistName = (pos == std::string::npos) ? netlistPath : netlistPath.substr(pos + 1);
+    netlistName.erase(netlistName.length()-2);
     
     // Read whole commented file into a string
     ifstream input(netlistPath);
@@ -209,8 +210,8 @@ void STA::patternParser(const string &patternPath){
     // Read input order
     patternOrder.resize(inputNum);
     input >> curLine; // ignore "input"
+    string str;
     for(size_t i = 0; i < inputNum; i++){
-        string str;
         input >> str;
         if(str.back() == ',') str.erase(str.size()-1,1);
         patternOrder[i] = str;
@@ -251,19 +252,18 @@ void STA::calOutputLoad(){
 
 void STA::dumpOutputLoad(){
     ofstream output("312510224_" + netlistName + "_load.txt");
-    vector<pair<string,Cell*>> cells(cellMap.begin(),cellMap.end());
-    sort(cells.begin(),cells.end(), [](const pair<string,Cell*> &p1, const pair<string,Cell*> &p2){
-        if(p1.second->outputLoad == p2.second->outputLoad){
-            return stoi(p1.second->name.substr(1)) < stoi(p2.second->name.substr(1));
-        }
-        return p1.second->outputLoad > p2.second->outputLoad;
-    });
-    for(const pair<string,Cell*> &p : cells){
+    // vector<pair<string,Cell*>> cells(cellMap.begin(),cellMap.end());
+    // sort(cells.begin(),cells.end(), [](const pair<string,Cell*> &p1, const pair<string,Cell*> &p2){
+    //     if(p1.second->outputLoad == p2.second->outputLoad){
+    //         return stoi(p1.second->name.substr(1)) < stoi(p2.second->name.substr(1));
+    //     }
+    //     return p1.second->outputLoad > p2.second->outputLoad;
+    // });
+    for(const pair<string,Cell*> p : cellMap){
         Cell* cell = p.second;
         output << cell->name << ' ' 
                << fixed << setprecision(6) 
                << cell->outputLoad << '\n';
-        if(cell->name == "G3766") cout << cell->outputLoad << '\n';
     }
     output.close();
 }
@@ -422,14 +422,14 @@ void STA::calPropagationDelay(){
 
 void STA::dumpDelay(){
     ofstream output("312510224_" + netlistName + "_delay.txt");
-    vector<Cell*> cells(t_sort.begin(),t_sort.end());
-    sort(cells.begin(),cells.end(),[](Cell* c1, Cell* c2){
-        if(c1->delay == c2->delay){
-            return stoi(c1->name.substr(1)) < stoi(c2->name.substr(1));
-        }
-        return c1->delay > c2->delay;
-    });
-    for(Cell* &cell : cells){
+    // vector<Cell*> cells(t_sort.begin(),t_sort.end());
+    // sort(cells.begin(),cells.end(),[](Cell* c1, Cell* c2){
+    //     if(c1->delay == c2->delay){
+    //         return stoi(c1->name.substr(1)) < stoi(c2->name.substr(1));
+    //     }
+    //     return c1->delay > c2->delay;
+    // });
+    for(Cell* &cell : t_sort){
         output << cell->name << " " 
                << cell->worstCaseValue << " " 
                << fixed << setprecision(6)
