@@ -36,7 +36,7 @@ public:
         const double &col_idx, 
         const double &row_idx
     );
-    double tableLookUp(Cell* cell, string tableType, int pattern_id);
+    double tableLookUp(Cell* cell, string tableType);
     void topologicalSort();
     void calInputTransitionTime(Cell* cell);
     void calPropagationDelay();
@@ -46,10 +46,10 @@ public:
     void pathFinding();
     void dumpPath();
     // Step 4
-    void calInputTransitionTime_Synthesis(Cell* cell, int pattern_id);
-    void simulate(const vector<char> &pattern, int pattern_id);
+    void calInputTransitionTime_Synthesis(Cell* cell);
+    void simulate(const vector<char> &pattern);
     void assignPattern();
-    void dumpGateInfo();
+    void dumpGateInfo(ofstream &output, const vector<Cell*> &cells);
 
 //  *********************************
 //  *        Member Variables       *

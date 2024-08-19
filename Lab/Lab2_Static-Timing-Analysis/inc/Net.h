@@ -13,7 +13,7 @@ public:
 
     string name;
     string type;
-    vector<char> value;
+    char value;
     Cell* inputCell;
     list<Cell*> outputCell;
 };
