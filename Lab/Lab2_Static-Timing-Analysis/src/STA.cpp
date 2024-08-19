@@ -437,7 +437,7 @@ void STA::dumpDelay(){
     vector<Cell*> cells(t_sort.begin(),t_sort.end());
     sort(cells.begin(),cells.end(),[](Cell* c1, Cell* c2){
         if(c1->delay == c2->delay){
-            return stoi(c1->name.substr(1)) < stoi(c2->name.substr(1));
+            return c1->number < c2->number;
         }
         return c1->delay > c2->delay;
     });
@@ -521,7 +521,7 @@ void STA::dumpPath(){
     output.close();
 }
 
-void STA::calInputTransitionTime_Synthesis(Cell* cell){
+void STA::calInputTransitionTime_Simulate(Cell* &cell){
     assert(cell->inputNet.size() == 1 || cell->inputNet.size() == 2);
     // INVX1
     if(cell->inputNet.size() == 1){
@@ -631,7 +631,7 @@ void STA::simulate(const vector<char> &pattern){
     // Traverse netlist in topological order
     for(Cell* &cell : t_sort){
         // Set input transition time
-        calInputTransitionTime_Synthesis(cell);
+        calInputTransitionTime_Simulate(cell);
         // Calculate intrinsic delay and rise/fall transition time by look-up table
         if(cell->value == '1'){
             cell->delay = tableLookUp(cell,"cell_rise");
@@ -650,7 +650,7 @@ void STA::assignPattern(){
     ofstream output("312510224_" + netlistName + "_gate_info.txt");
     vector<Cell*> cellsInGateOrder(t_sort);
     sort(cellsInGateOrder.begin(), cellsInGateOrder.end(), Cell::cmpWithGateOrder);
-    for(vector<char> pattern:patterns){
+    for(vector<char> pattern : patterns){
         simulate(pattern);
         dumpGateInfo(output,cellsInGateOrder);
     }

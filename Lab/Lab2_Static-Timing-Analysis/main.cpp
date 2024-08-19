@@ -15,9 +15,6 @@ void extractPath(int argc, char* argv[]){
 }
 
 int main(int argc, char* argv[]){
-    #if PRINTTIME
-    clock_t start = clock();
-    #endif
     STA sta;
     extractPath(argc,argv);
     sta.verilogParser(netlistPath);
@@ -37,6 +34,9 @@ int main(int argc, char* argv[]){
     sta.dumpPath();
 
     // Step 4
+    #if PRINTTIME
+    clock_t start = clock();
+    #endif
     sta.assignPattern();
     #if PRINTTIME
     cout << (double)(clock() - start) / CLOCKS_PER_SEC * 1000 << "ms" << '\n';

@@ -46,7 +46,7 @@ public:
     void pathFinding();
     void dumpPath();
     // Step 4
-    void calInputTransitionTime_Synthesis(Cell* cell);
+    void calInputTransitionTime_Simulate(Cell* &cell);
     void simulate(const vector<char> &pattern);
     void assignPattern();
     void dumpGateInfo(ofstream &output, const vector<Cell*> &cells);

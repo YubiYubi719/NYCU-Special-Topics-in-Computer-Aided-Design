@@ -1,6 +1,6 @@
 # compiler settings 
 CXX = g++
-CXXFLAGS = -I ./inc -std=c++11 -static -fopenmp -DPRINTTIME=true -DTESTMODE=false -DNDEBUG 
+CXXFLAGS = -I ./inc -std=c++11 -static -fopenmp -DPRINTTIME=true -DTESTMODE=true -DNDEBUG 
 OPTFLAGS = -flto -funroll-loops -finline-functions -O3 -ffast-math
 WARNINGS = -g -Wall
 # DEFINE = -DPRINTTIME=true
@@ -65,8 +65,8 @@ c432:
 
 c123456:
 	time ./$(TARGET)  $(CASEDIR)/c123456.v -l $(CASEDIR)/$(LIBRARY) -i $(CASEDIR)/c123456.pat
-#	diff -w --ignore-blank-lines 312510224_c123456_load.txt Test_Case/golden/golden_c123456_load.txt
-#	diff -w --ignore-blank-lines 312510224_c123456_delay.txt Test_Case/golden/golden_c123456_delay.txt
+	diff -w --ignore-blank-lines 312510224_c123456_load.txt Test_Case/golden/golden_c123456_load.txt
+	diff -w --ignore-blank-lines 312510224_c123456_delay.txt Test_Case/golden/golden_c123456_delay.txt
 	diff -w --ignore-blank-lines 312510224_c123456_gate_info.txt Test_Case/golden/golden_c123456_gate_info.txt
 
 clean:
