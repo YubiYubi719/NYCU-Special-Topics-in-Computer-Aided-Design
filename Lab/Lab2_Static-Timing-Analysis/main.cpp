@@ -38,10 +38,11 @@ int main(int argc, char* argv[]){
 
     // Step 4
     sta.assignPattern();
-
+    sta.dumpGateInfo();
     #if PRINTTIME
     cout << (double)(clock() - start) / CLOCKS_PER_SEC * 1000 << "ms" << '\n';
     #endif
+
 
     return 0;
 }

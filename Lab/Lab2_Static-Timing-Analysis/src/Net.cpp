@@ -9,7 +9,6 @@ Net::Net(
     const string &netType
 ) : name(netName), 
     type(netType),
-    value(' '),
     inputCell(nullptr){
     ;
 }

@@ -29,11 +29,20 @@ Cell::Cell(
     arrivalTime(0.0),
     inDegree(0),
     prevCell(nullptr),
-    worstCaseValue(' '),
-    value(' '){
-    if(gateType == "INVX1")         controlledValue = 'X'; // both 0 and 1 are controlling value
-    else if(gateType == "NANDX1")   controlledValue = '0';
-    else /* gateType == "NOR2X1" */ controlledValue = '1';
+    worstCaseValue(' '){
+    if(gateType == "INVX1"){
+        inputNet.resize(1);
+        controlledValue = 'X'; // both 0 and 1 are controlling value
+    }
+    else if(gateType == "NANDX1"){
+        inputNet.resize(2);
+        controlledValue = '0';
+    }
+    else /* gateType == "NOR2X1" */ {
+        inputNet.resize(2);
+        controlledValue = '1';
+    }
+    number = stoi(gateName.substr(1));
 }
 
 Cell::~Cell(){
@@ -41,5 +50,5 @@ Cell::~Cell(){
 }
 
 bool Cell::cmpWithGateOrder(const Cell* const &cell_1, const Cell* const &cell_2){
-    return stoi(cell_1->name.substr(1)) < stoi(cell_2->name.substr(1));
+    return cell_1->number < cell_2->number;
 }

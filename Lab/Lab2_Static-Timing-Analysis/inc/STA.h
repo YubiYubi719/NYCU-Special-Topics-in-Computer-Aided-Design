@@ -2,6 +2,7 @@
 #define STA_H
 #include <bits/stdc++.h>
 #include <regex>
+#include <omp.h>
 #include "Util.h"
 #include "Net.h"
 #include "Cell.h"
@@ -20,7 +21,6 @@ public:
 //  *        Member Functions       *
 //  *********************************
     // Parser
-    size_t inputNum; // number of input net
     string removeComment(string code);
     void verilogParser(const string &netlistPath);
     void libraryParser(const string &libraryPath);
@@ -36,7 +36,7 @@ public:
         const double &col_idx, 
         const double &row_idx
     );
-    double tableLookUp(Cell* cell, string tableType);
+    double tableLookUp(Cell* cell, string tableType, int pattern_id);
     void topologicalSort();
     void calInputTransitionTime(Cell* cell);
     void calPropagationDelay();
@@ -46,14 +46,15 @@ public:
     void pathFinding();
     void dumpPath();
     // Step 4
-    void calInputTransitionTime_Synthesis(Cell* cell);
-    void synthesis(const vector<char> &pattern);
+    void calInputTransitionTime_Synthesis(Cell* cell, int pattern_id);
+    void simulate(const vector<char> &pattern, int pattern_id);
     void assignPattern();
-    void dumpGateInfo(ofstream &output);
+    void dumpGateInfo();
 
 //  *********************************
 //  *        Member Variables       *
 //  *********************************
+    size_t inputNum; // number of input net
     string netlistName;
     string patternName;
     unordered_map<string,Net*> netMap;

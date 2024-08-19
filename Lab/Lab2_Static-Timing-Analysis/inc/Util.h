@@ -7,6 +7,7 @@ using namespace std;
 
 #define WIRE_DELAY  0.005
 #define OUTPUT_LOAD 0.03
+#define MAX_THREADS 8
 
 const regex Comment_Pattern_1("//(?!.*\\*/).*\n");
 const regex Comment_Pattern_2("/\\*[\\s\\S]*?\\*/");

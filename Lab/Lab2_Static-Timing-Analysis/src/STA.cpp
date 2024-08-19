@@ -5,7 +5,8 @@ STA::STA(): inputNum(0){
 }
 
 STA::~STA(){
-    ;
+    for(pair<string,Net*> p : netMap)   delete p.second;
+    for(pair<string,Cell*> p : cellMap) delete p.second;
 }
 
 string STA::removeComment(string code){
@@ -39,9 +40,10 @@ void STA::verilogParser(const string &netlistPath){
     string commentedCode, curLine;
     while(getline(input,curLine)){ commentedCode += curLine + "\n"; }
     string cleanCode = removeComment(commentedCode);
-    // cout << cleanCode << '\n';
+    // add space
+    cleanCode = regex_replace(cleanCode,Word_Pattern," $& ");
     // Parse 
-    stringstream ss_code(cleanCode);
+    stringstream ss_code(cleanCode), ss;
     string opType;
     smatch match;
     string netName;
@@ -49,62 +51,51 @@ void STA::verilogParser(const string &netlistPath){
     string pin;
     while(getline(ss_code,curLine)){
         // Use regular expression to extract current type
-        regex_search(curLine,match,Type_Pattern);
-        opType = match.str();
-        curLine = match.suffix().str();
+        ss.clear();
+        ss.str(curLine);
+
+        ss >> opType;
+        // curLine = match.suffix().str();
         if(opType == "output" || opType == "input" || opType == "wire"){
             // Use regular expression to extract netName
-            while(regex_search(curLine,match,Word_Pattern)){
-                if(opType == "input") inputNum++;
-                netName = match.str();
-                curLine = match.suffix().str();
-                Net* net = new Net(netName,opType);
-                netMap[netName] = net;
+            while(ss >> netName){
+                if(netName[0] == 'n' || netName[0] == 'N'){
+                    if(opType == "input") inputNum++;
+                    Net* net = new Net(netName,opType);
+                    netMap[netName] = net;
+                }
             }
         }
         else if(opType == "INVX1" || opType == "NANDX1" || opType == "NOR2X1"){
             // Extract cellName
-            regex_search(curLine,match,Word_Pattern);
-            cellName = match.str();
-            curLine = match.suffix().str();
+            ss >> cellName;
             Cell* cell = new Cell(cellName,opType);
 
-            // Extract output net
-            regex_search(curLine,match,OutputNet_Pattern);
-            Net* outputNet = netMap.at(match[1].str());
-            cell->outputNet = outputNet;
-            outputNet->inputCell = cell;
-            if(outputNet->type == "output") outputCell.push_back(cell);
-
-            // Extract input net
-            if(opType == "INVX1"){
-                regex_search(curLine,match,INVX1_InputNet_Pattern);
-                cell->inputNet.push_back(netMap.at(match[1].str()));
-                netMap.at(match[1].str())->outputCell.push_back(cell);
-            }
-            else /* opType == "NANDX1" || opType == "NOR2X1" */ {
-                cell->inputNet.resize(2);
-                regex_search(curLine,match,NANDX1_NOR2X1_InputNet_Pattern);
-
-                pin = match[1].str();
-                netName = match[2].str();
-                if(pin == "A1"){
+            while(ss >> curLine){
+                // input net
+                if(curLine == "A1"){
+                    ss >> netName >> netName; // ignore '('
                     cell->inputNet[0] = netMap.at(netName);
+                    netMap.at(netName)->outputCell.push_back(cell);
                 }
-                else /* pin == "A2" */ {
+                else if(curLine == "A2"){
+                    ss >> netName >> netName; // ignore '('
                     cell->inputNet[1] = netMap.at(netName);
+                    netMap.at(netName)->outputCell.push_back(cell);
                 }
-                netMap.at(netName)->outputCell.push_back(cell);
-
-                pin = match[3].str();
-                netName = match[4].str();
-                if(pin == "A1"){
+                else if(curLine == "I"){
+                    ss >> netName >> netName; // ignore '('
                     cell->inputNet[0] = netMap.at(netName);
+                    netMap.at(netName)->outputCell.push_back(cell);
                 }
-                else /* pin == "A2" */ {
-                    cell->inputNet[1] = netMap.at(netName);
+                // output net
+                else if(curLine == "ZN"){
+                    ss >> netName >> netName; // ignore '('
+                    Net* outputNet = netMap.at(netName);
+                    cell->outputNet = outputNet;
+                    outputNet->inputCell = cell;
+                    if(outputNet->type == "output") outputCell.push_back(cell);
                 }
-                netMap.at(netName)->outputCell.push_back(cell);
             }
             cellMap[cellName] = cell;
         }
@@ -228,6 +219,19 @@ void STA::patternParser(const string &patternPath){
         for(size_t i = 0; i < inputNum; i++) ss >> pattern[i];
         patterns.push_back(pattern);
     }
+
+    // todo:
+    for(pair<string,Cell*> p : cellMap){
+        Cell* cell = p.second;
+        cell->value.reserve(patterns.size());
+        cell->inputTransition.reserve(patterns.size());
+        cell->outputTransition.reserve(patterns.size());
+        cell->delay.reserve(patterns.size());
+        cell->arrivalTime.reserve(patterns.size());
+    }
+    for(pair<string,Net*> p : netMap){
+        p.second->value.reserve(patterns.size());
+    }
 }
 
 void STA::calOutputLoad(){
@@ -250,6 +254,25 @@ void STA::calOutputLoad(){
     }
 }
 
+#if TESTMODE
+void STA::dumpOutputLoad(){
+    ofstream output("312510224_" + netlistName + "_load.txt");
+    vector<pair<string,Cell*>> cells(cellMap.begin(),cellMap.end());
+    sort(cells.begin(),cells.end(), [](const pair<string,Cell*> &p1, const pair<string,Cell*> &p2){
+        if(p1.second->outputLoad == p2.second->outputLoad){
+            return stoi(p1.second->name.substr(1)) < stoi(p2.second->name.substr(1));
+        }
+        return p1.second->outputLoad > p2.second->outputLoad;
+    });
+    for(const pair<string,Cell*> p : cells){
+        Cell* cell = p.second;
+        output << cell->name << ' ' 
+               << fixed << setprecision(6) 
+               << cell->outputLoad << '\n';
+    }
+    output.close();
+}
+#else
 void STA::dumpOutputLoad(){
     ofstream output("312510224_" + netlistName + "_load.txt");
     // vector<pair<string,Cell*>> cells(cellMap.begin(),cellMap.end());
@@ -267,6 +290,8 @@ void STA::dumpOutputLoad(){
     }
     output.close();
 }
+#endif
+
 
 /*
 * @brief 
@@ -323,7 +348,7 @@ double STA::interpolate(
     return A + (B-A) / (row_2-row_1) * (inputTransition-row_1);
 }
 
-double STA::tableLookUp(Cell* cell, string tableType){
+double STA::tableLookUp(Cell* cell, string tableType, int pattern_id){
     size_t index_1_idx, index_2_idx;
     //If larger, use binary search
     size_t colSize = cellLib.index_1.size();
@@ -331,19 +356,18 @@ double STA::tableLookUp(Cell* cell, string tableType){
     for(index_1_idx = 0; index_1_idx < colSize; index_1_idx++){
         if(cellLib.index_1[index_1_idx] > cell->outputLoad) break;
     }
-    for(index_2_idx = 0; index_2_idx < rowSize; index_2_idx++){
-        if(cellLib.index_2[index_2_idx] > cell->inputTransition) break;
-    }
-
-    const vector<double> &table = cellLib.cellMap.at(cell->type)->tables.at(tableType);
-    
     if(index_1_idx == 0) index_1_idx = 1;
     else if(index_1_idx == colSize) index_1_idx = colSize - 1;
 
+    for(index_2_idx = 0; index_2_idx < rowSize; index_2_idx++){
+        if(cellLib.index_2[index_2_idx] > cell->inputTransition[pattern_id]) break;
+    }
     if(index_2_idx == 0) index_2_idx = 1;
     else if(index_2_idx == rowSize) index_2_idx = rowSize - 1;
 
-    return interpolate(cell->inputTransition,cell->outputLoad,table,index_1_idx,index_2_idx);
+    const vector<double> &table = cellLib.cellMap.at(cell->type)->tables.at(tableType);
+    
+    return interpolate(cell->inputTransition[pattern_id],cell->outputLoad,table,index_1_idx,index_2_idx);
 }
 
 void STA::calInputTransitionTime(Cell* cell){
@@ -352,12 +376,12 @@ void STA::calInputTransitionTime(Cell* cell){
     if(cell->inputNet.size() == 1){
         Cell* const &prevCell = cell->inputNet[0]->inputCell;
         if(cell->inputNet[0]->type == "input"){
-            cell->inputTransition = 0.0;
-            cell->arrivalTime = 0.0;
+            cell->inputTransition[0] = 0.0;
+            cell->arrivalTime[0] = 0.0;
         }
         else /* cell->inputNet[0]->type == "wire" or "output" */ {
-            cell->inputTransition = prevCell->outputTransition;
-            cell->arrivalTime = prevCell->arrivalTime + prevCell->delay + WIRE_DELAY;
+            cell->inputTransition[0] = prevCell->outputTransition[0];
+            cell->arrivalTime[0] = prevCell->arrivalTime[0] + prevCell->delay[0] + WIRE_DELAY;
             cell->prevCell = prevCell;
         }
         return;
@@ -365,35 +389,35 @@ void STA::calInputTransitionTime(Cell* cell){
 
     // NANDX1, NOR2X1
     if(cell->inputNet[0]->type == "input" && cell->inputNet[1]->type == "input"){
-        cell->inputTransition = 0.0;
-        cell->arrivalTime = 0.0;
+        cell->inputTransition[0] = 0.0;
+        cell->arrivalTime[0] = 0.0;
     }
     else if(cell->inputNet[0]->type != "input" && cell->inputNet[1]->type == "input"){
         Cell* const &prevCell = cell->inputNet[0]->inputCell;
-        cell->inputTransition = prevCell->outputTransition;
-        cell->arrivalTime = prevCell->arrivalTime + prevCell->delay + WIRE_DELAY;
+        cell->inputTransition[0] = prevCell->outputTransition[0];
+        cell->arrivalTime[0] = prevCell->arrivalTime[0] + prevCell->delay[0] + WIRE_DELAY;
         cell->prevCell = prevCell;
     }
     else if(cell->inputNet[0]->type == "input" && cell->inputNet[1]->type != "input"){
         Cell* const &prevCell = cell->inputNet[1]->inputCell;
-        cell->inputTransition = prevCell->outputTransition;
-        cell->arrivalTime = prevCell->arrivalTime + prevCell->delay + WIRE_DELAY;
+        cell->inputTransition[0] = prevCell->outputTransition[0];
+        cell->arrivalTime[0] = prevCell->arrivalTime[0] + prevCell->delay[0] + WIRE_DELAY;
         cell->prevCell = prevCell;
     }
     else /* cell->inputNet[0]->type != "input" && cell->inputNet[1]->type != "input" */ {
         Cell* const &prevCell_0 = cell->inputNet[0]->inputCell;
         Cell* const &prevCell_1 = cell->inputNet[1]->inputCell;
         // Choose the slower signal
-        double arrival_0 = prevCell_0->arrivalTime + prevCell_0->delay + WIRE_DELAY;
-        double arrival_1 = prevCell_1->arrivalTime + prevCell_1->delay + WIRE_DELAY;
+        double arrival_0 = prevCell_0->arrivalTime[0] + prevCell_0->delay[0] + WIRE_DELAY;
+        double arrival_1 = prevCell_1->arrivalTime[0] + prevCell_1->delay[0] + WIRE_DELAY;
         if(arrival_0 > arrival_1){
-            cell->inputTransition = prevCell_0->outputTransition;
-            cell->arrivalTime = arrival_0;
+            cell->inputTransition[0] = prevCell_0->outputTransition[0];
+            cell->arrivalTime[0] = arrival_0;
             cell->prevCell = prevCell_0;
         }
         else /* arrival_1 > arrival_0 */ {
-            cell->inputTransition = prevCell_1->outputTransition;
-            cell->arrivalTime = arrival_1;
+            cell->inputTransition[0] = prevCell_1->outputTransition[0];
+            cell->arrivalTime[0] = arrival_1;
             cell->prevCell = prevCell_1;
         }
     }
@@ -405,21 +429,41 @@ void STA::calPropagationDelay(){
     for(Cell* &cell : t_sort){
         calInputTransitionTime(cell);
         // Calculate intrinsic delay and rise/fall transition time by look-up table
-        double riseDelay = tableLookUp(cell,"cell_rise");
-        double fallDelay = tableLookUp(cell,"cell_fall");
+        double riseDelay = tableLookUp(cell,"cell_rise",0);
+        double fallDelay = tableLookUp(cell,"cell_fall",0);
         if(riseDelay > fallDelay){
-            cell->delay = riseDelay;
-            cell->outputTransition = tableLookUp(cell,"rise_transition");
+            cell->delay[0] = riseDelay;
+            cell->outputTransition[0] = tableLookUp(cell,"rise_transition",0);
             cell->worstCaseValue = '1';
         }
         else /* riseDelay < fallDelay */ {
-            cell->delay = fallDelay;
-            cell->outputTransition = tableLookUp(cell,"fall_transition");
+            cell->delay[0] = fallDelay;
+            cell->outputTransition[0] = tableLookUp(cell,"fall_transition",0);
             cell->worstCaseValue = '0';
         }
     }
 }
 
+#if TESTMODE
+void STA::dumpDelay(){
+    ofstream output("312510224_" + netlistName + "_delay.txt");
+    vector<Cell*> cells(t_sort.begin(),t_sort.end());
+    sort(cells.begin(),cells.end(),[](Cell* c1, Cell* c2){
+        if(c1->delay[0] == c2->delay[0]){
+            return stoi(c1->name.substr(1)) < stoi(c2->name.substr(1));
+        }
+        return c1->delay[0] > c2->delay[0];
+    });
+    for(Cell* &cell : cells){
+        output << cell->name << " " 
+               << cell->worstCaseValue << " " 
+               << fixed << setprecision(6)
+               << cell->delay[0] << " " 
+               << cell->outputTransition[0] << '\n';
+    }
+    output.close();
+}
+#else 
 void STA::dumpDelay(){
     ofstream output("312510224_" + netlistName + "_delay.txt");
     // vector<Cell*> cells(t_sort.begin(),t_sort.end());
@@ -433,11 +477,12 @@ void STA::dumpDelay(){
         output << cell->name << " " 
                << cell->worstCaseValue << " " 
                << fixed << setprecision(6)
-               << cell->delay << " " 
-               << cell->outputTransition << '\n';
+               << cell->delay[0] << " " 
+               << cell->outputTransition[0] << '\n';
     }
     output.close();
 }
+#endif
 
 vector<Net*> STA::findPath(Cell* cell){
     vector<Net*> path;
@@ -454,7 +499,7 @@ void STA::pathFinding(){
     minDelay = DBL_MAX;
     Cell *longestPathCell = nullptr, *shortestPathCell = nullptr;
     for(Cell* const &cell : outputCell){
-        double outputDelay = cell->arrivalTime + cell->delay;
+        double outputDelay = cell->arrivalTime[0] + cell->delay[0];
         if(outputDelay > maxDelay){
             maxDelay = outputDelay;
             longestPathCell = cell;
@@ -472,16 +517,16 @@ void STA::pathFinding(){
 void STA::dumpPath(){
     ofstream output("312510224_" + netlistName + "_path.txt");
     output << "Longest delay = " 
-         << fixed << setprecision(6)
-         << maxDelay << ", the path is: ";
+           << fixed << setprecision(6)
+           << maxDelay << ", the path is: ";
     for(auto iter = longestPath.rbegin(); iter != longestPath.rend(); iter++){
         output << (*iter)->name << " ";
         if(next(iter) != longestPath.rend()) output << "-> ";
     }
     output << '\n';
     output << "Shortest delay = " 
-         << fixed << setprecision(6)
-         << minDelay << ", the path is: ";
+           << fixed << setprecision(6)
+           << minDelay << ", the path is: ";
     for(auto iter = shortestPath.rbegin(); iter != shortestPath.rend(); iter++){
         output << (*iter)->name << " ";
         if(next(iter) != shortestPath.rend()) output << "-> ";
@@ -489,21 +534,21 @@ void STA::dumpPath(){
     output.close();
 }
 
-void STA::calInputTransitionTime_Synthesis(Cell* cell){
+void STA::calInputTransitionTime_Synthesis(Cell* cell, int pattern_id){
     assert(cell->inputNet.size() == 1 || cell->inputNet.size() == 2);
     // INVX1
     if(cell->inputNet.size() == 1){
         if(cell->inputNet[0]->type == "input"){
-            cell->inputTransition = 0.0;
-            cell->arrivalTime = 0.0;
+            cell->inputTransition[pattern_id] = 0.0;
+            cell->arrivalTime[pattern_id] = 0.0;
         }
         else /*cell->inputNet[0]->type == "wire" */ {
             Cell* const &prevCell = cell->inputNet[0]->inputCell;
-            cell->inputTransition = prevCell->outputTransition;
-            cell->arrivalTime = prevCell->arrivalTime + prevCell->delay + WIRE_DELAY;
+            cell->inputTransition[pattern_id] = prevCell->outputTransition[pattern_id];
+            cell->arrivalTime[pattern_id] = prevCell->arrivalTime[pattern_id] + prevCell->delay[pattern_id] + WIRE_DELAY;
             cell->prevCell = prevCell;
         }
-        cell->value = (cell->inputNet[0]->value == '0')? '1' : '0';
+        cell->value[pattern_id] = (cell->inputNet[0]->value[pattern_id] == '0')? '1' : '0';
         return;
     }
 
@@ -511,127 +556,129 @@ void STA::calInputTransitionTime_Synthesis(Cell* cell){
     Net* A1 = cell->inputNet[0];
     Net* A2 = cell->inputNet[1];
     if(A1->type == "input" && cell->inputNet[1]->type == "input"){
-        cell->inputTransition = 0.0;
-        cell->arrivalTime = 0.0;
+        cell->inputTransition[pattern_id] = 0.0;
+        cell->arrivalTime[pattern_id] = 0.0;
     }
     else if(A1->type != "input" && A2->type == "input"){
-        if(A2->value == cell->controlledValue){
-            cell->inputTransition = 0.0;
-            cell->arrivalTime = 0.0;
+        if(A2->value[pattern_id] == cell->controlledValue){
+            cell->inputTransition[pattern_id] = 0.0;
+            cell->arrivalTime[pattern_id] = 0.0;
         }
-        else if(A1->value == cell->controlledValue){
+        else if(A1->value[pattern_id] == cell->controlledValue){
             Cell* const &prevCell = A1->inputCell;
-            cell->inputTransition = prevCell->outputTransition;
-            cell->arrivalTime = prevCell->arrivalTime + prevCell->delay + WIRE_DELAY;
+            cell->inputTransition[pattern_id] = prevCell->outputTransition[pattern_id];
+            cell->arrivalTime[pattern_id] = prevCell->arrivalTime[pattern_id] + prevCell->delay[pattern_id] + WIRE_DELAY;
         }
         else /* A1->value != cell->controlledValue && A2->value != cell->controlledValue */ {
             Cell* const &prevCell = A1->inputCell;
-            cell->inputTransition = prevCell->outputTransition;
-            cell->arrivalTime = prevCell->arrivalTime + prevCell->delay + WIRE_DELAY;
+            cell->inputTransition[pattern_id] = prevCell->outputTransition[pattern_id];
+            cell->arrivalTime[pattern_id] = prevCell->arrivalTime[pattern_id] + prevCell->delay[pattern_id] + WIRE_DELAY;
         }
     }
     else if(A1->type == "input" && A2->type != "input"){
-        if(A1->value == cell->controlledValue){
-            cell->inputTransition = 0.0;
-            cell->arrivalTime = 0.0;
+        if(A1->value[pattern_id] == cell->controlledValue){
+            cell->inputTransition[pattern_id] = 0.0;
+            cell->arrivalTime[pattern_id] = 0.0;
         }
-        else if(A2->value == cell->controlledValue) {
+        else if(A2->value[pattern_id] == cell->controlledValue) {
             Cell* const &prevCell = A2->inputCell;
-            cell->inputTransition = prevCell->outputTransition;
-            cell->arrivalTime = prevCell->arrivalTime + prevCell->delay + WIRE_DELAY;
+            cell->inputTransition[pattern_id] = prevCell->outputTransition[pattern_id];
+            cell->arrivalTime[pattern_id] = prevCell->arrivalTime[pattern_id] + prevCell->delay[pattern_id] + WIRE_DELAY;
         }
         else /* A1->value != cell->controlledValue && A2->value != cell->controlledValue */ {
             Cell* const &prevCell = A2->inputCell;
-            cell->inputTransition = prevCell->outputTransition;
-            cell->arrivalTime = prevCell->arrivalTime + prevCell->delay + WIRE_DELAY;
+            cell->inputTransition[pattern_id] = prevCell->outputTransition[pattern_id];
+            cell->arrivalTime[pattern_id] = prevCell->arrivalTime[pattern_id] + prevCell->delay[pattern_id] + WIRE_DELAY;
         }
     }
     else /* A1->type != "input" && A2->type != "input" */ {
-        if(A1->value == cell->controlledValue && A2->value == cell->controlledValue){
+        if(A1->value[pattern_id] == cell->controlledValue && A2->value[pattern_id] == cell->controlledValue){
             Cell* const &prevCell_0 = A1->inputCell;
             Cell* const &prevCell_1 = A2->inputCell;
             // Choose the smaller arrival time input
-            double arrival_0 = prevCell_0->arrivalTime + prevCell_0->delay + WIRE_DELAY;
-            double arrival_1 = prevCell_1->arrivalTime + prevCell_1->delay + WIRE_DELAY;
+            double arrival_0 = prevCell_0->arrivalTime[pattern_id] + prevCell_0->delay[pattern_id] + WIRE_DELAY;
+            double arrival_1 = prevCell_1->arrivalTime[pattern_id] + prevCell_1->delay[pattern_id] + WIRE_DELAY;
             if(arrival_0 < arrival_1){
-                cell->inputTransition = prevCell_0->outputTransition;
-                cell->arrivalTime = arrival_0;
+                cell->inputTransition[pattern_id] = prevCell_0->outputTransition[pattern_id];
+                cell->arrivalTime[pattern_id] = arrival_0;
             }
             else /* arrival_1 < arrival_0 */ {
-                cell->inputTransition = prevCell_1->outputTransition;
-                cell->arrivalTime = arrival_1;
+                cell->inputTransition[pattern_id] = prevCell_1->outputTransition[pattern_id];
+                cell->arrivalTime[pattern_id] = arrival_1;
             }
         }
-        else if(A1->value == cell->controlledValue){
+        else if(A1->value[pattern_id] == cell->controlledValue){
             Cell* const &prevCell = A1->inputCell;
-            cell->inputTransition = prevCell->outputTransition;
-            cell->arrivalTime = prevCell->arrivalTime + prevCell->delay + WIRE_DELAY;
+            cell->inputTransition[pattern_id] = prevCell->outputTransition[pattern_id];
+            cell->arrivalTime[pattern_id] = prevCell->arrivalTime[pattern_id] + prevCell->delay[pattern_id] + WIRE_DELAY;
         }
-        else if(A2->value == cell->controlledValue){
+        else if(A2->value[pattern_id] == cell->controlledValue){
             Cell* const &prevCell = A2->inputCell;
-            cell->inputTransition = prevCell->outputTransition;
-            cell->arrivalTime = prevCell->arrivalTime + prevCell->delay + WIRE_DELAY;
+            cell->inputTransition[pattern_id] = prevCell->outputTransition[pattern_id];
+            cell->arrivalTime[pattern_id] = prevCell->arrivalTime[pattern_id] + prevCell->delay[pattern_id] + WIRE_DELAY;
         }
         else /* A1->value != cell->controlledValue && A2->value != cell->controlledValue */ {
             Cell* const &prevCell_0 = A1->inputCell;
             Cell* const &prevCell_1 = A2->inputCell;
             // Choose the bigger arrival time input
-            double arrival_0 = prevCell_0->arrivalTime + prevCell_0->delay + WIRE_DELAY;
-            double arrival_1 = prevCell_1->arrivalTime + prevCell_1->delay + WIRE_DELAY;
+            double arrival_0 = prevCell_0->arrivalTime[pattern_id] + prevCell_0->delay[pattern_id] + WIRE_DELAY;
+            double arrival_1 = prevCell_1->arrivalTime[pattern_id] + prevCell_1->delay[pattern_id] + WIRE_DELAY;
             if(arrival_0 > arrival_1){
-                cell->inputTransition = prevCell_0->outputTransition;
-                cell->arrivalTime = arrival_0;
+                cell->inputTransition[pattern_id] = prevCell_0->outputTransition[pattern_id];
+                cell->arrivalTime[pattern_id] = arrival_0;
             }
             else /*arrival_1 > arrival_0*/ {
-                cell->inputTransition = prevCell_1->outputTransition;
-                cell->arrivalTime = arrival_1;
+                cell->inputTransition[pattern_id] = prevCell_1->outputTransition[pattern_id];
+                cell->arrivalTime[pattern_id] = arrival_1;
             }
         }
     }
-    cell->value = truthTable.at(cell->type)({A1->value,A2->value});
+    cell->value[pattern_id] = truthTable.at(cell->type)({A1->value[pattern_id],A2->value[pattern_id]});
 }
 
 
-void STA::synthesis(const vector<char> &pattern){
+void STA::simulate(const vector<char> &pattern, int pattern_id){
     for(size_t i = 0; i < pattern.size(); i++){
-        netMap.at(patternOrder[i])->value = pattern[i];
+        netMap.at(patternOrder[i])->value[pattern_id] = pattern[i];
     }
     // Traverse netlist in topological order
     for(Cell* &cell : t_sort){
         // Set input transition time
-        calInputTransitionTime_Synthesis(cell);
+        calInputTransitionTime_Synthesis(cell, pattern_id);
         // Calculate intrinsic delay and rise/fall transition time by look-up table
-        if(cell->value == '1'){
-            cell->delay = tableLookUp(cell,"cell_rise");
-            cell->outputTransition = tableLookUp(cell,"rise_transition");
-            cell->outputNet->value = '1';
+        if(cell->value[pattern_id] == '1'){
+            cell->delay[pattern_id] = tableLookUp(cell,"cell_rise",pattern_id);
+            cell->outputTransition[pattern_id] = tableLookUp(cell,"rise_transition",pattern_id);
+            cell->outputNet->value[pattern_id] = '1';
         }
-        else /* cell->outputNet->value == '0' */ {
-            cell->delay = tableLookUp(cell,"cell_fall");
-            cell->outputTransition = tableLookUp(cell,"fall_transition");
-            cell->outputNet->value = '0';
+        else /* cell->value[pattern_id] == '0' */ {
+            cell->delay[pattern_id] = tableLookUp(cell,"cell_fall",pattern_id);
+            cell->outputTransition[pattern_id] = tableLookUp(cell,"fall_transition",pattern_id);
+            cell->outputNet->value[pattern_id] = '0';
         }
     }
 }
 
 void STA::assignPattern(){
-    ofstream output("312510224_" + netlistName + "_gate_info.txt");
-    for(const vector<char> &pattern:patterns){
-        synthesis(pattern);
-        dumpGateInfo(output);
+    // #pragma omp parallel for num_threads(MAX_THREADS)
+    for(size_t i = 0; i < patterns.size(); i++){
+        simulate(patterns[i],i);
     }
-    output.close();
 }
 
-void STA::dumpGateInfo(ofstream &output){
+void STA::dumpGateInfo(){
+    ofstream output("312510224_" + netlistName + "_gate_info.txt");
     vector<Cell*> cellsInGateOrder(t_sort);
     sort(cellsInGateOrder.begin(), cellsInGateOrder.end(), Cell::cmpWithGateOrder);
-    for(Cell* cell : cellsInGateOrder){
-        output << cell->name  << " " 
-               << cell->value << " "
-               << fixed << setprecision(6)
-               << cell->delay << " "
-               << cell->outputTransition << '\n';
+    for(size_t i = 0; i < patterns.size(); i++){
+        for(Cell* cell : cellsInGateOrder){
+            output << cell->name  << " " 
+                   << cell->value[i] << " "
+                   << fixed << setprecision(6)
+                   << cell->delay[i] << " "
+                   << cell->outputTransition[i] << '\n';
+        }
+        output << '\n';
     }
-    output << '\n';
+    output.close();
 }
