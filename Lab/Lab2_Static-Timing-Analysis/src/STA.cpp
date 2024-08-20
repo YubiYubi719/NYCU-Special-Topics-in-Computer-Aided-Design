@@ -59,7 +59,7 @@ void STA::verilogParser(const string &netlistPath){
         if(opType == "output" || opType == "input" || opType == "wire"){
             // Use regular expression to extract netName
             while(ss >> netName){
-                if(netName[0] == 'n' || netName[0] == 'N'){
+                if(isalpha(netName[0])){
                     if(opType == "input") inputNum++;
                     Net* net = new Net(netName,opType);
                     netMap[netName] = net;
