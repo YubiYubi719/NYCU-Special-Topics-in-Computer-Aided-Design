@@ -59,7 +59,7 @@ void STA::verilogParser(const string &netlistPath){
         if(opType == "output" || opType == "input" || opType == "wire"){
             // Use regular expression to extract netName
             while(ss >> netName){
-                if(netName[0] == 'n' || netName[0] == 'N'){
+                if(isalpha(netName[0])){
                     if(opType == "input") inputNum++;
                     Net* net = new Net(netName,opType);
                     netMap[netName] = net;
@@ -660,7 +660,7 @@ void STA::simulate(const vector<char> &pattern, int pattern_id){
 }
 
 void STA::assignPattern(){
-    // #pragma omp parallel for num_threads(MAX_THREADS)
+    #pragma omp parallel for num_threads(MAX_THREADS)
     for(size_t i = 0; i < patterns.size(); i++){
         simulate(patterns[i],i);
     }
