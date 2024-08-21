@@ -45,7 +45,6 @@ void STA::verilogParser(const string &netlistPath){
     // Parse 
     stringstream ss_code(cleanCode), ss;
     string opType;
-    smatch match;
     string netName;
     string cellName;
     string pin;
@@ -61,7 +60,6 @@ void STA::verilogParser(const string &netlistPath){
             NetType netType = str2NetType(opType);
             while(ss >> netName){
                 if(isalpha(netName[0])){
-                    // if(opType == "input") inputNum++;
                     if(netType == input) inputNum++;
                     Net* net = new Net(netName,netType);
                     netMap[netName] = net;
@@ -432,10 +430,7 @@ void STA::dumpDelay(){
     ofstream output("312510224_" + netlistName + "_delay.txt");
     vector<Cell*> cells(t_sort.begin(),t_sort.end());
     sort(cells.begin(),cells.end(),[](Cell* c1, Cell* c2){
-        if(c1->delay == c2->delay){
-            return c1->number < c2->number;
-        }
-        return c1->delay > c2->delay;
+        return c1->number < c2->number;
     });
     for(Cell* &cell : cells){
         output << cell->name << " " 

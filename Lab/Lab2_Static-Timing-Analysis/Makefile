@@ -66,15 +66,8 @@ c432:
 c123456:
 	time ./$(TARGET)  $(CASEDIR)/c123456.v -l $(CASEDIR)/$(LIBRARY) -i $(CASEDIR)/c123456.pat
 	diff -w --ignore-blank-lines 312510224_c123456_load.txt Test_Case/golden/golden_c123456_load.txt
-#	diff -w --ignore-blank-lines 312510224_c123456_delay.txt Test_Case/golden/golden_c123456_delay.txt
-	diff -w --ignore-blank-lines 312510224_c123456_gate_info.txt Test_Case/golden/golden_c123456_gate_info.txt
-
-hidden:
-	time ./$(TARGET)  $(CASEDIR)/hidden_1.v -l $(CASEDIR)/$(LIBRARY) -i $(CASEDIR)/hidden_1.pat
-	diff -w --ignore-blank-lines 312510224_hidden_1_load.txt prevHiddenResult/312510224_hidden_1_load.txt
-	diff -w --ignore-blank-lines 312510224_hidden_1_delay.txt prevHiddenResult/312510224_hidden_1_delay.txt
-	diff -w --ignore-blank-lines 312510224_hidden_1_path.txt prevHiddenResult/312510224_hidden_1_path.txt
-	diff -w --ignore-blank-lines 312510224_hidden_1_gate_info.txt prevHiddenResult/312510224_hidden_1_gate_info.txt
+	./checker_2 312510224_c123456_delay.txt Test_Case/golden/golden_c123456_delay.txt
+	./checker_4 312510224_c123456_gate_info.txt Test_Case/golden/golden_c123456_gate_info.txt
 
 clean:
 	rm -rf $(OBJDIR) $(TARGET) *.txt

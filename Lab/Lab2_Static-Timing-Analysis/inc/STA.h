@@ -57,7 +57,7 @@ public:
     size_t inputNum; // number of input net
     string netlistName;
     string patternName;
-    unordered_map<string,Net*> netMap;
+    unordered_map<string,Net*>  netMap;
     unordered_map<size_t,Cell*> cellMap;
     vector<string> patternOrder;
     vector<vector<char>> patterns;
