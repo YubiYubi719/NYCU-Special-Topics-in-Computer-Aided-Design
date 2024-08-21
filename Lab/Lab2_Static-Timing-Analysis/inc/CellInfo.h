@@ -11,8 +11,8 @@ public:
     ~CellInfo();
     
     vector<double> pinCap;
-    unordered_map<TableType,vector<double>> tables; // first: table type (cell_rise, cell_fall, rise_transition, fall_transition)
-                                                 // second: look-up table
+    vector<vector<double>> tables; // first: TableType (cell_rise, cell_fall, rise_transition, fall_transition)
+                                   // second: look-up table
 };
 
 #endif

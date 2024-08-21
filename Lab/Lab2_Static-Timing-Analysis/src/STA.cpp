@@ -348,7 +348,7 @@ double STA::tableLookUp(const Cell* const &cell, const TableType &tableType){
     if(index_2_idx == 0) index_2_idx = 1;
     else if(index_2_idx == rowSize) index_2_idx = rowSize - 1;
 
-    const vector<double> &table = cellLib.cellInfos[cell->type]->tables.at(tableType);
+    const vector<double> &table = cellLib.cellInfos[cell->type]->tables[tableType];
     
     return interpolate(cell->inputTransition,cell->outputLoad,table,index_1_idx,index_2_idx);
 }
