@@ -141,7 +141,7 @@ void STA::libraryParser(const string &filename){
             cellType = str2CellType(match[1].str());
             CellInfo* cell_info = new CellInfo;
             if(cellType == NOR2X1 || cellType == NANDX1) cell_info->pinCap.resize(2);
-            cellLib.cellMap[cellType] = cell_info;
+            cellLib.cellInfos[cellType] = cell_info;
         }
 
         // Extract input pin capacitance
@@ -162,9 +162,9 @@ void STA::libraryParser(const string &filename){
                 if(curLine.back() == '}') break;
             }
             regex_search(pinStr,match,Capacitance_Pattern);
-            if(pin == "A1")      cellLib.cellMap[cellType]->pinCap[0] = stod(match[1].str());
-            else if(pin == "A2") cellLib.cellMap[cellType]->pinCap[1] = stod(match[1].str());
-            else /*pin == "I"*/  cellLib.cellMap[cellType]->pinCap.emplace_back(stod(match[1].str()));
+            if(pin == "A1")      cellLib.cellInfos[cellType]->pinCap[0] = stod(match[1].str());
+            else if(pin == "A2") cellLib.cellInfos[cellType]->pinCap[1] = stod(match[1].str());
+            else /*pin == "I"*/  cellLib.cellInfos[cellType]->pinCap.emplace_back(stod(match[1].str()));
         }
 
         // extract timing information
@@ -191,7 +191,7 @@ void STA::libraryParser(const string &filename){
             }
             // Store timing table
             while(regex_search(timeStr,match,Float_Pattern)){
-                cellLib.cellMap[cellType]->tables[timeType].emplace_back(stod(match.str()));
+                cellLib.cellInfos[cellType]->tables[timeType].emplace_back(stod(match.str()));
                 timeStr = match.suffix().str();
             }
         }
@@ -236,7 +236,7 @@ void STA::calOutputLoad(){
             for(size_t i = 0; i < outputCell->inputNet.size(); i++){
                 Net* net = outputCell->inputNet[i];
                 if(net == cell->outputNet){
-                    outputLoad += cellLib.cellMap.at(outputCell->type)->pinCap[i];
+                    outputLoad += cellLib.cellInfos[outputCell->type]->pinCap[i];
                     break;
                 }
             }
@@ -348,7 +348,7 @@ double STA::tableLookUp(const Cell* const &cell, const TableType &tableType){
     if(index_2_idx == 0) index_2_idx = 1;
     else if(index_2_idx == rowSize) index_2_idx = rowSize - 1;
 
-    const vector<double> &table = cellLib.cellMap.at(cell->type)->tables.at(tableType);
+    const vector<double> &table = cellLib.cellInfos[cell->type]->tables.at(tableType);
     
     return interpolate(cell->inputTransition,cell->outputLoad,table,index_1_idx,index_2_idx);
 }
