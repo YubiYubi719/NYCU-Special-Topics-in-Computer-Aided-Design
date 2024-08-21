@@ -3,8 +3,6 @@
 Cell::Cell():
     inputTransition(0.0),
     outputTransition(0.0),
-    riseTransition(0.0),
-    fallTransition(0.0),
     outputLoad(0.0),
     delay(0.0),
     arrivalTime(0.0),
@@ -16,33 +14,34 @@ Cell::Cell():
 }
 
 Cell::Cell(
-    string &gateName, 
-    string &gateType
-) : name(gateName), 
-    type(gateType), 
+    string &cellName, 
+    CellType &cellType
+) : name(cellName),
+    type(cellType),
     inputTransition(0.0),
     outputTransition(0.0),
-    riseTransition(0.0),
-    fallTransition(0.0),
     outputLoad(0.0),
     delay(0.0),
     arrivalTime(0.0),
     inDegree(0),
     prevCell(nullptr),
     worstCaseValue(' '){
-    if(gateType == "INVX1"){
+    if(cellType == INVX1){
         inputNet.resize(1);
-        controlledValue = 'X'; // both 0 and 1 are controlling value
+        controllingValue = DONTCARE; // both 0 and 1 are controlling value
+        type = INVX1;
     }
-    else if(gateType == "NANDX1"){
+    else if(cellType == NANDX1){
         inputNet.resize(2);
-        controlledValue = '0';
+        controllingValue = LOW;
+        type = NANDX1;
     }
-    else /* gateType == "NOR2X1" */ {
+    else /* cellType == NOR2X1 */ {
         inputNet.resize(2);
-        controlledValue = '1';
+        controllingValue = HIGH;
+        type = NOR2X1;
     }
-    number = stoi(gateName.substr(1));
+    number = stoi(cellName.substr(1));
 }
 
 Cell::~Cell(){

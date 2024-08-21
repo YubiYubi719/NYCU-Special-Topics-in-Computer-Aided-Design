@@ -1,17 +1,11 @@
 #include "Util.h"
 
-char NAND_truthTable(pair<char,char> p){
-    if(p.first == '0' && p.second == '0') return '1';
-    if(p.first == '0' && p.second == '1') return '1';
-    if(p.first == '1' && p.second == '0') return '1';
-    if(p.first == '1' && p.second == '1') return '0';
-    return 'X';
+char NAND_truthTable(const pair<char,char> &p){
+    int input = ((p.first - '0') << 1) + (p.second - '0');
+    return (input == 3) ? '0' : '1'; // NAND: 11 -> 0
 }
 
-char NOR_truthTable(pair<char,char> p){
-    if(p.first == '0' && p.second == '0') return '1';
-    if(p.first == '0' && p.second == '1') return '0';
-    if(p.first == '1' && p.second == '0') return '0';
-    if(p.first == '1' && p.second == '1') return '0';
-    return 'X';
+char NOR_truthTable(const pair<char,char> &p){
+    int input = ((p.first - '0') << 1) + (p.second - '0');
+    return (input == 0) ? '1' : '0'; // NOR: 00 -> 1
 }

@@ -1,14 +1,15 @@
 #include "Net.h"
 
-Net::Net(){
+Net::Net() : inputCell(nullptr){
     ;
 }
 
 Net::Net(
     const string &netName, 
-    const string &netType
+    const NetType &netType
 ) : name(netName), 
     type(netType),
+    value(DONTCARE),
     inputCell(nullptr){
     ;
 }
