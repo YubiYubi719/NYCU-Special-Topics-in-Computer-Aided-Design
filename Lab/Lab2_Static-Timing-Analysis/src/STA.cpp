@@ -9,20 +9,22 @@ STA::~STA(){
     for(pair<size_t,Cell*> p : cellMap) delete p.second;
 }
 
-string STA::removeComment(string code){
+string STA::removeComment(string &code){
     // Remove //... that does not contain */
     code = regex_replace(code, Comment_Pattern_1, "");
     
     // Remove /*...*/ cross multi-line
     code = regex_replace(code, Comment_Pattern_2, "");
 
-    // Remove //...
-    code = regex_replace(code, Comment_Pattern_3, "");
-
     string result, curLine;
     stringstream ss(code);
     while(ss >> curLine){
-        // Remove redundant space and add newline after ';'
+        // Remove //...
+        size_t pos = curLine.rfind("//");
+        if (pos != string::npos) curLine.resize(pos);
+        // add space
+        curLine = regex_replace(curLine,Word_Pattern," $& ");
+        // Add newline after ';'
         result += (curLine.back() == ';')? curLine+"\n" : curLine+" ";
     }
 
@@ -32,7 +34,7 @@ string STA::removeComment(string code){
 void STA::verilogParser(const string &netlistPath){
     // Extract netlist name from its path
     size_t pos = netlistPath.find_last_of("/\\");
-    netlistName = (pos == std::string::npos) ? netlistPath : netlistPath.substr(pos + 1);
+    netlistName = (pos == string::npos) ? netlistPath : netlistPath.substr(pos + 1);
     netlistName.erase(netlistName.length()-2);
     
     // Read whole commented file into a string
@@ -40,8 +42,7 @@ void STA::verilogParser(const string &netlistPath){
     string commentedCode, curLine;
     while(getline(fin,curLine)){ commentedCode += curLine + "\n"; }
     string cleanCode = removeComment(commentedCode);
-    // add space
-    cleanCode = regex_replace(cleanCode,Word_Pattern," $& ");
+    
     // Parse 
     stringstream ss_code(cleanCode), ss;
     string opType;
@@ -49,7 +50,6 @@ void STA::verilogParser(const string &netlistPath){
     string cellName;
     string pin;
     while(getline(ss_code,curLine)){
-        // Use regular expression to extract current type
         ss.clear();
         ss.str(curLine);
 
@@ -455,8 +455,8 @@ void STA::dumpDelay(){
 }
 #endif
 
-vector<Net*> STA::findPath(Cell* cell){
-    vector<Net*> path;
+list<Net*> STA::findPath(Cell* cell){
+    list<Net*> path;
     while(cell != nullptr){
         path.push_back(cell->outputNet);
         if(cell->prevCell == nullptr) path.push_back(cell->inputNet[0]);
@@ -517,7 +517,6 @@ void STA::calInputTransitionTime_Simulate(Cell* const &cell){
             Cell* const &prevCell = cell->inputNet[0]->inputCell;
             cell->inputTransition = prevCell->outputTransition;
             cell->arrivalTime = prevCell->arrivalTime + prevCell->delay + WIRE_DELAY;
-            cell->prevCell = prevCell;
         }
         cell->value = (cell->inputNet[0]->value == LOW)? HIGH : LOW;
         return;
@@ -557,8 +556,8 @@ void STA::calInputTransitionTime_Simulate(Cell* const &cell){
             const Cell* const &prevCell_0 = A1->inputCell;
             const Cell* const &prevCell_1 = A2->inputCell;
             // Choose the smaller arrival time input
-            double arrival_0 = prevCell_0->arrivalTime + prevCell_0->delay + WIRE_DELAY;
-            double arrival_1 = prevCell_1->arrivalTime + prevCell_1->delay + WIRE_DELAY;
+            const double arrival_0 = prevCell_0->arrivalTime + prevCell_0->delay + WIRE_DELAY;
+            const double arrival_1 = prevCell_1->arrivalTime + prevCell_1->delay + WIRE_DELAY;
             if(arrival_0 < arrival_1){
                 cell->inputTransition = prevCell_0->outputTransition;
                 cell->arrivalTime = arrival_0;
@@ -631,7 +630,7 @@ void STA::assignPattern(){
 }
 
 void STA::dumpGateInfo(ofstream &output, const vector<Cell*> &cells){
-    for(Cell* cell : cells){
+    for(const Cell* const &cell : cells){
         output << cell->name  << " " 
                << cell->value << " "
                << fixed << setprecision(6)

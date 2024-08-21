@@ -21,7 +21,7 @@ public:
 //  *        Member Functions       *
 //  *********************************
     // Parser
-    string removeComment(string code);
+    string removeComment(string &code);
     void verilogParser(const string &netlistPath);
     void libraryParser(const string &libraryPath);
     void patternParser(const string &patternPath);
@@ -42,7 +42,7 @@ public:
     void calPropagationDelay();
     void dumpDelay();
     // Step 3
-    vector<Net*> findPath(Cell* cell);
+    list<Net*> findPath(Cell* cell);
     void pathFinding();
     void dumpPath();
     // Step 4
@@ -65,8 +65,8 @@ public:
     Library cellLib;
     double maxDelay, minDelay;
     vector<Cell*> outputCell;
-    vector<Net*> longestPath;
-    vector<Net*> shortestPath;
+    list<Net*> longestPath;
+    list<Net*> shortestPath;
 };
 
 #endif
