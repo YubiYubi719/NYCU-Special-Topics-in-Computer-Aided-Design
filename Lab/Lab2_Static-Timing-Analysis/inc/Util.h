@@ -12,11 +12,13 @@ using namespace std;
 #define LOW  '0'
 #define DONTCARE 'X'
 
+
 enum CellType{
-    INVX1,
     NANDX1,
-    NOR2X1
+    NOR2X1,
+    INVX1
 };
+
 
 enum NetType{
     input,
@@ -66,9 +68,6 @@ using TablePtr = char (*)(const pair<char,char> &);
 char NAND_truthTable(const pair<char,char> &p);
 char NOR_truthTable(const pair<char,char> &p);
 
-const unordered_map<CellType, TablePtr> truthTable = {
-    { NANDX1 , NAND_truthTable },
-    { NOR2X1 , NOR_truthTable  }
-};
+const vector<TablePtr> truthTable = { NAND_truthTable, NOR_truthTable };
 
 #endif

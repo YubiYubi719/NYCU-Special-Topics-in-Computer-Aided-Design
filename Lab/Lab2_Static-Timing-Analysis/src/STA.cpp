@@ -599,7 +599,7 @@ void STA::calInputTransitionTime_Simulate(Cell* const &cell){
             }
         }
     }
-    cell->value = truthTable.at(cell->type)({A1->value,A2->value});
+    cell->value = truthTable[cell->type]({A1->value,A2->value});
 }
 
 void STA::simulate(const vector<char> &pattern){
