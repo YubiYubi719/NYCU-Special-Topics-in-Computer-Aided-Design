@@ -18,7 +18,7 @@ CASEDIR = Test_Case
 # change here!!
 NETLIST = hellish.v
 LIBRARY = test_lib.lib
-PATTERN = hellish.pat
+PATTERN = c17.pat
 
 TARGET = 312510224
 
