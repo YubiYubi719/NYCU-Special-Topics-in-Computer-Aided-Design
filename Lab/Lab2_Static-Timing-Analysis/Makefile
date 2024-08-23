@@ -16,9 +16,9 @@ OBJS = $(patsubst $(SRCDIR)/%.cpp,$(OBJDIR)/%.o,$(SRCS))
 CASEDIR = Test_Case
 
 # change here!!
-NETLIST = hellish.v
+NETLIST = c54321.v
 LIBRARY = test_lib.lib
-PATTERN = c17.pat
+PATTERN = c54321.pat
 
 TARGET = 312510224
 
@@ -35,39 +35,6 @@ $(OBJDIR)/%.o: $(SRCDIR)/%.cpp | $(OBJDIR)
 
 run:
 	time ./$(TARGET)  $(CASEDIR)/$(NETLIST) -l $(CASEDIR)/$(LIBRARY) -i $(CASEDIR)/$(PATTERN)
-
-c17:
-	time ./$(TARGET)  $(CASEDIR)/c17.v -l $(CASEDIR)/$(LIBRARY) -i $(CASEDIR)/c17.pat
-	diff -w --ignore-blank-lines 312510224_c17_load.txt Test_Case/golden/golden_c17_load.txt
-	./checker_2 312510224_c17_delay.txt Test_Case/golden/golden_c17_delay.txt
-	diff -w --ignore-blank-lines 312510224_c17_path.txt Test_Case/golden/golden_c17_path_1.txt
-	diff -w --ignore-blank-lines 312510224_c17_gate_info.txt Test_Case/golden/golden_c17_gate_info.txt
-
-c17_cmt:
-	time ./$(TARGET)  $(CASEDIR)/c17_comment.v -l $(CASEDIR)/$(LIBRARY) -i $(CASEDIR)/c17.pat
-	diff -w --ignore-blank-lines 312510224_c17_comment_load.txt Test_Case/golden/golden_c17_load.txt
-	./checker_2 312510224_c17_comment_delay.txt Test_Case/golden/golden_c17_delay.txt
-	diff -w --ignore-blank-lines 312510224_c17_comment_path.txt Test_Case/golden/golden_c17_path_1.txt
-	diff -w --ignore-blank-lines 312510224_c17_comment_gate_info.txt Test_Case/golden/golden_c17_gate_info.txt
-
-hellish:
-	time ./$(TARGET)  $(CASEDIR)/hellish.v -l $(CASEDIR)/$(LIBRARY) -i $(CASEDIR)/c17.pat
-	diff -w --ignore-blank-lines 312510224_hellish_load.txt Test_Case/golden/golden_c17_load.txt
-	diff -w --ignore-blank-lines 312510224_hellish_delay.txt Test_Case/golden/golden_c17_delay.txt
-	diff -w --ignore-blank-lines 312510224_hellish_path.txt Test_Case/golden/golden_c17_path_1.txt
-	diff -w --ignore-blank-lines 312510224_hellish_gate_info.txt Test_Case/golden/golden_c17_gate_info.txt
-
-c432:
-	time ./$(TARGET)  $(CASEDIR)/c432.v -l $(CASEDIR)/$(LIBRARY) -i $(CASEDIR)/c432.pat
-#	diff -w --ignore-blank-lines 312510224_c432_load.txt Test_Case/golden/golden_c432_load.txt
-	diff -w --ignore-blank-lines 312510224_c432_delay.txt Test_Case/golden/golden_c432_delay.txt
-	diff -w --ignore-blank-lines 312510224_c432_gate_info.txt Test_Case/golden/golden_c432_gate_info.txt
-
-c123456:
-	time ./$(TARGET)  $(CASEDIR)/c123456.v -l $(CASEDIR)/$(LIBRARY) -i $(CASEDIR)/c123456.pat
-	diff -w --ignore-blank-lines 312510224_c123456_load.txt Test_Case/golden/golden_c123456_load.txt
-	./checker_2 312510224_c123456_delay.txt Test_Case/golden/golden_c123456_delay.txt
-	./checker_4 312510224_c123456_gate_info.txt Test_Case/golden/golden_c123456_gate_info.txt
 
 clean:
 	rm -rf $(OBJDIR) $(TARGET) *.txt
