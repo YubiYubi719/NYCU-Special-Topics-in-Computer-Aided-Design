@@ -1,7 +1,7 @@
 #!/bin/bash
 
 binaryName=312510224
-testDir=("c17" "c432" "c123456" "example" "c54321")
+testDir=("c17" "c17_comment" "c432" "c123456" "example" "c54321")
 PATNUM=4
 
 # compile necessary files
