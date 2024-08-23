@@ -12,7 +12,7 @@ SRCS = $(wildcard $(SRCDIR)/*.cpp)
 OBJS = $(patsubst $(SRCDIR)/%.cpp,$(OBJDIR)/%.o,$(SRCS))
 
 # testcase file
-CASENAME = c123456
+CASENAME = c17
 CASEDIR = testcase/$(CASENAME)
 
 # change here!!

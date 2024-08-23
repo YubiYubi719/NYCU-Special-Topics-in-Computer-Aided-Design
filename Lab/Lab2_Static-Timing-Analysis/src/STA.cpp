@@ -11,20 +11,18 @@ STA::~STA(){
 
 string STA::removeComment(string &code){
     // Remove //... that does not contain */
-    code = regex_replace(code, Comment_Pattern_1, "");
+    // code = regex_replace(code, Comment_Pattern_1, "");
     
     // Remove /*...*/ cross multi-line
     code = regex_replace(code, Comment_Pattern_2, "");
 
+    // Remove //...
+    code = regex_replace(code, Comment_Pattern_3, "");
+
     string result, curLine;
     stringstream ss(code);
+    // Remove redundant space and add newline after ';'
     while(ss >> curLine){
-        // Remove //...
-        size_t pos = curLine.rfind("//");
-        if (pos != string::npos) curLine.resize(pos);
-        // add space
-        curLine = regex_replace(curLine,Word_Pattern," $& ");
-        // Add newline after ';'
         result += (curLine.back() == ';')? curLine+"\n" : curLine+" ";
     }
 
@@ -40,8 +38,11 @@ void STA::verilogParser(const string &netlistPath){
     // Read whole commented file into a string
     ifstream fin(netlistPath);
     string commentedCode, curLine;
-    while(getline(fin,curLine)){ commentedCode += curLine + "\n"; }
+    while(getline(fin,curLine,';')){ commentedCode += curLine + ";\n"; }
     string cleanCode = removeComment(commentedCode);
+    // add space
+    cleanCode = regex_replace(cleanCode,Word_Pattern," $& ");
+    // cout << cleanCode << '\n';
     fin.close();
     
     // Parse 
@@ -51,6 +52,7 @@ void STA::verilogParser(const string &netlistPath){
     string cellName;
     string pin;
     while(getline(ss_code,curLine)){
+        if(curLine.empty()) continue;
         ss.clear();
         ss.str(curLine);
 
