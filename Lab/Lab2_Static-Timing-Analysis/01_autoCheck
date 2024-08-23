@@ -48,7 +48,7 @@ run_tests() {
 }
 
 cleanup() {
-    # make clean > make.log
+    make clean > make.log
     rm -f make.log verifier_1 verifier_2 verifier_3 verifier_4
     # rm -rf checkResult
 }
