@@ -1,2 +1,0 @@
-Longest delay = 0.168909, the path is: N1979 -> n44008 -> n85047 -> N123398
-Shortest delay = 0.025345, the path is: N7708 -> N46873

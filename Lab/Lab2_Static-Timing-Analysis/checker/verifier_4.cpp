@@ -24,7 +24,7 @@ bool step4(const string DUT_path, const string GOLDEN_path){
     int line = 1;
     while(getline(golden, goldenLine)){
         getline(dut,dutLine);
-        if(goldenLine.empty()){
+        if(goldenLine.empty() || goldenLine == "\r"){
             line++;
             continue;
         }

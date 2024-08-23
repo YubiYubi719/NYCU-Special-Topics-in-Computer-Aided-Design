@@ -16,6 +16,7 @@ bool step1(const string DUT_path, const string GOLDEN_path){
     // Read golden ans
     ifstream golden(GOLDEN_path);
     while(getline(golden,curLine)){
+        if(curLine.empty()) continue;
         stringstream ss(curLine);
         string cellName, outputLoad;
         ss >> cellName >> outputLoad;
@@ -26,6 +27,7 @@ bool step1(const string DUT_path, const string GOLDEN_path){
     // Read user ans
     ifstream dut(DUT_path);
     while(getline(dut,curLine)){
+        if(curLine.empty()) continue;
         stringstream ss(curLine);
         string cellName, load;
         ss >> cellName >> load;
@@ -51,7 +53,7 @@ bool step1(const string DUT_path, const string GOLDEN_path){
             while(goldenLoad.length() < 6) goldenLoad = "0" + goldenLoad;
             string wrongLoad = to_string(wrongLoads[i]);
             while(wrongLoad.length() < 6) wrongLoad = "0" + wrongLoad;
-            cerr << "Wrong outputLoad at " << p.first 
+            cout << "Wrong outputLoad at " << p.first 
                  << " | Golden load: 0." << goldenLoad
                  << " | Your load: 0."   << wrongLoad << '\n';
             i++;

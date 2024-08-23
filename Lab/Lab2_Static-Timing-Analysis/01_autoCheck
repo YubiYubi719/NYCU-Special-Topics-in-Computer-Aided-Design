@@ -7,7 +7,7 @@ PATNUM=4
 # compile necessary files
 compile() {
     make clean > make.log
-    make > make.log
+    make -j > make.log
     echo -e "Generate verifier..."
     g++ -std=c++11 checker/verifier_1.cpp -o verifier_1
     g++ -std=c++11 checker/verifier_2.cpp -o verifier_2
@@ -17,7 +17,7 @@ compile() {
 
 # clean and prepare directories
 prepare_directories() {
-    for dir in outputResult checkResult; do
+    for dir in checkResult; do
         [ -d "$dir" ] && rm -rf "$dir"
         mkdir "$dir"
     done
@@ -26,25 +26,18 @@ prepare_directories() {
 # run tests for a given test case
 run_tests() {
     local caseDir=$1
-    local prefix="${binaryName}_${caseDir}_"
-    local loadFileName="${prefix}_load.txt"
-    local delayFileName="${prefix}_delay.txt"
-    local pathFileName="${prefix}_path.txt"
-    local gateinfoFileName="${prefix}_gate_info.txt"
-    local DUT_Files=("" $loadFileName $delayFileName $pathFileName $gateinfoFileName)
+    local prefix="${binaryName}_${caseDir}"
+    local DUT_Files=("" "${prefix}_load.txt" "${prefix}_delay.txt" "${prefix}_path.txt" "${prefix}_gate_info.txt")
 
-    local goldenPrefix="testcase/golden/$caseDir/golden"
-    local golden_loadFileName="${goldenPrefix}_load.txt"
-    local golden_delayFileName="${goldenPrefix}_delay.txt"
-    local golden_pathFileName="${goldenPrefix}_path.txt"
-    local golden_gateinfoFileName="${goldenPrefix}_gate_info.txt"
-    local Golden_Files=("" $golden_loadFileName $golden_delayFileName $golden_pathFileName $golden_gateinfoFileName)
+    local goldenPrefix="testcase/golden/$caseDir/golden_$caseDir"
+    local Golden_Files=("" "${goldenPrefix}_load.txt" "${goldenPrefix}_delay.txt" "${goldenPrefix}_path.txt" "${goldenPrefix}_gate_info.txt")
     echo -e "\033[0;34mCase $caseDir\033[0m"
     
     ./$binaryName "testcase/$caseDir/$caseDir.v" "-l" "testcase/test_lib.lib" "-i" "testcase/$caseDir/$caseDir.pat"
     for((i=1; i<=PATNUM; i++)) do
-        ./verifier_${i} ${DUT_Files[i]} ${Golden_Files[i]} > checkResult/check.log
-        if grep -iq "step${i} correct." checkResult/check.log; then
+        ./verifier_${i} ${DUT_Files[i]} ${Golden_Files[i]} > checkResult/check_step${i}.log
+        # echo -e "./verifier_${i} ${DUT_Files[i]} ${Golden_Files[i]}"
+        if grep -iq "step${i} correct." checkResult/check_step${i}.log; then
             echo -e "\033[0;34mPass  \033[m  \033[0;32mStep $i \033[0m"
         else
             echo -e "\033[31m--- Check Fail ---\033[0m"
@@ -57,7 +50,7 @@ run_tests() {
 cleanup() {
     make clean > make.log
     rm -f make.log verifier_1 verifier_2 verifier_3 verifier_4
-    rm -rf checkResult
+    # rm -rf checkResult
 }
 
 # Main script
@@ -71,7 +64,6 @@ done
 
 # Reminder
 echo -e "\033[0;32mCongratulation!! You have passed all patterns. \033[0m"
-echo -e "\033[31mReminder: \033[0mThis checker does not check following terms:"
-echo -e "          1. Path in step 3"
+echo -e "\033[31mReminder: \033[0mThis checker does not check the longest and shortest paths in step 3 (only check delay)."
 
 cleanup

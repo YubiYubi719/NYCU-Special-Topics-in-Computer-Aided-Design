@@ -40,6 +40,7 @@ bool step1(const string DUT_path, const string GOLDEN_path){
     // Read golden ans
     ifstream golden(GOLDEN_path);
     while(getline(golden,curLine)){
+        if(curLine.empty()) continue;
         stringstream ss(curLine);
         string cellName, v, d, t;
         ss >> cellName >> v >> d >> t;
@@ -50,6 +51,7 @@ bool step1(const string DUT_path, const string GOLDEN_path){
     // Read user ans
     ifstream dut(DUT_path);
     while(getline(dut,curLine)){
+        if(curLine.empty()) continue;
         stringstream ss(curLine);
         string cellName, v, d, t;
         ss >> cellName >> v >> d >> t;
@@ -71,7 +73,7 @@ bool step1(const string DUT_path, const string GOLDEN_path){
     for(const auto &p : mp){
         const Status &status = p.second.second;
         if(status == err){
-            cerr << "Wrong output at " << p.first 
+            cout << "Wrong output at " << p.first 
                  << " | Golden: " << p.second.first
                  << " | Yours: "   << wrongCells[i] << '\n';
             i++;
