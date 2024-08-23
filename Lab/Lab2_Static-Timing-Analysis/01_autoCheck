@@ -59,6 +59,7 @@ compile
 prepare_directories
 
 for testCase in "${testDir[@]}"; do
+    rm -f checkResult/*.log
     run_tests "$testCase"
 done
 

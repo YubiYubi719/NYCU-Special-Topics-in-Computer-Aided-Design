@@ -38,7 +38,7 @@ bool step4(const string DUT_path, const string GOLDEN_path){
         Cell goldenCell = {golden_inf[0], golden_inf[1], stoi(golden_inf[2].substr(2)), stoi(golden_inf[3].substr(2))};
         Cell dutCell = {dut_inf[0], dut_inf[1], stoi(dut_inf[2].substr(2)), stoi(dut_inf[3].substr(2))};
         if(!(goldenCell == dutCell)){
-            cerr << "Wrong output at line " << line
+            cout << "Wrong output at line " << line
                  << " | Golden: " << goldenLine
                  << " | Yours: "   << dutLine << '\n';
             return false;

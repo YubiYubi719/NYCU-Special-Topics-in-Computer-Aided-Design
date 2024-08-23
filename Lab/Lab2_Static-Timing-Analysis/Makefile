@@ -1,9 +1,8 @@
 # compiler settings 
 CXX = g++
-CXXFLAGS = -I ./inc -std=c++11 -static -fopenmp -DPRINTTIME=true -DTESTMODE=true -DNDEBUG 
+CXXFLAGS = -I ./inc -std=c++11 -static -fopenmp -DPRINTTIME=true -DNDEBUG 
 OPTFLAGS = -flto -funroll-loops -finline-functions -O3 -ffast-math
 WARNINGS = -g -Wall
-# DEFINE = -DPRINTTIME=true
 
 # Source files and object files
 SRCDIR = src
@@ -13,12 +12,13 @@ SRCS = $(wildcard $(SRCDIR)/*.cpp)
 OBJS = $(patsubst $(SRCDIR)/%.cpp,$(OBJDIR)/%.o,$(SRCS))
 
 # testcase file
-CASEDIR = Test_Case
+CASENAME = c123456
+CASEDIR = testcase/$(CASENAME)
 
 # change here!!
-NETLIST = c54321.v
-LIBRARY = test_lib.lib
-PATTERN = c54321.pat
+NETLIST = $(CASENAME).v
+LIBRARY = testcase/test_lib.lib
+PATTERN = $(CASENAME).pat
 
 TARGET = 312510224
 
@@ -34,7 +34,7 @@ $(OBJDIR)/%.o: $(SRCDIR)/%.cpp | $(OBJDIR)
 	$(CXX) $(WARNINGS) $(CXXFLAGS) $(OPTFLAGS) -c $< -o $@
 
 run:
-	time ./$(TARGET)  $(CASEDIR)/$(NETLIST) -l $(CASEDIR)/$(LIBRARY) -i $(CASEDIR)/$(PATTERN)
+	time ./$(TARGET)  $(CASEDIR)/$(NETLIST) -l $(LIBRARY) -i $(CASEDIR)/$(PATTERN)
 
 clean:
 	rm -rf $(OBJDIR) $(TARGET) *.txt

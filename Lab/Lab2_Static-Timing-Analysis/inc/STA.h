@@ -25,9 +25,9 @@ public:
     void verilogParser(const string &netlistPath);
     void libraryParser(const string &libraryPath);
     void patternParser(const string &patternPath);
+    void topologicalSort();
     // Step 1
     void calOutputLoad();
-    void dumpOutputLoad();
     // Step 2
     double interpolate(
         const double &inputTransition,
@@ -37,12 +37,10 @@ public:
         const double &row_idx
     );
     double tableLookUp(const Cell* const &cell, const TableType &tableType);
-    void topologicalSort();
     void calInputTransitionTime(Cell* const &cell);
     void calPropagationDelay();
-    void dumpDelay();
     // Step 3
-    list<Net*> findPath(Cell* cell);
+    vector<Net*> findPath(Cell* cell);
     void pathFinding();
     void dumpPath();
     // Step 4
@@ -51,6 +49,7 @@ public:
     void assignPattern();
     void dumpGateInfo(ofstream &output, const vector<Cell*> &cells);
 
+private:
 //  *********************************
 //  *        Member Variables       *
 //  *********************************
@@ -65,8 +64,8 @@ public:
     Library cellLib;
     double maxDelay, minDelay;
     vector<Cell*> outputCell;
-    list<Net*> longestPath;
-    list<Net*> shortestPath;
+    vector<Net*> longestPath;
+    vector<Net*> shortestPath;
 };
 
 #endif

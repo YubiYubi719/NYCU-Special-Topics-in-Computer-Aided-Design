@@ -5,8 +5,8 @@ STA::STA(): inputNum(0){
 }
 
 STA::~STA(){
-    for(pair<string,Net*> p : netMap)   delete p.second;
-    for(pair<size_t,Cell*> p : cellMap) delete p.second;
+    for(const pair<const string,Net*>  &p : netMap)  delete p.second;
+    for(const pair<const size_t,Cell*> &p : cellMap) delete p.second;
 }
 
 string STA::removeComment(string &code){
@@ -42,6 +42,7 @@ void STA::verilogParser(const string &netlistPath){
     string commentedCode, curLine;
     while(getline(fin,curLine)){ commentedCode += curLine + "\n"; }
     string cleanCode = removeComment(commentedCode);
+    fin.close();
     
     // Parse 
     stringstream ss_code(cleanCode), ss;
@@ -77,18 +78,21 @@ void STA::verilogParser(const string &netlistPath){
                 // input net
                 if(curLine == "A1"){
                     ss >> netName >> netName; // ignore '('
-                    cell->inputNet[0] = netMap.at(netName);
-                    netMap.at(netName)->outputCell.push_back(cell);
+                    Net* &net = netMap.at(netName);
+                    cell->inputNet[0] = net;
+                    net->outputCell.push_back(cell);
                 }
                 else if(curLine == "A2"){
                     ss >> netName >> netName; // ignore '('
-                    cell->inputNet[1] = netMap.at(netName);
-                    netMap.at(netName)->outputCell.push_back(cell);
+                    Net* &net = netMap.at(netName);
+                    cell->inputNet[1] = net;
+                    net->outputCell.push_back(cell);
                 }
                 else if(curLine == "I"){
                     ss >> netName >> netName; // ignore '('
-                    cell->inputNet[0] = netMap.at(netName);
-                    netMap.at(netName)->outputCell.push_back(cell);
+                    Net* &net = netMap.at(netName);
+                    cell->inputNet[0] = net;
+                    net->outputCell.push_back(cell);
                 }
                 // output net
                 else if(curLine == "ZN"){
@@ -102,7 +106,6 @@ void STA::verilogParser(const string &netlistPath){
             cellMap[cell->number] = cell;
         }
     }
-    fin.close();
 }
 
 void STA::libraryParser(const string &filename){
@@ -223,58 +226,6 @@ void STA::patternParser(const string &patternPath){
     }
 }
 
-void STA::calOutputLoad(){
-    // Traverse all cell 
-    for(pair<const size_t,Cell*> const &p : cellMap){
-        // Calculate output load of current cell
-        Cell* cell = p.second;
-        double outputLoad = 0.0;
-        if(cell->outputNet->type == output) outputLoad += OUTPUT_LOAD;
-        for(Cell* outputCell:cell->outputNet->outputCell){
-            for(size_t i = 0; i < outputCell->inputNet.size(); i++){
-                Net* net = outputCell->inputNet[i];
-                if(net == cell->outputNet){
-                    outputLoad += cellLib.cellInfos[outputCell->type]->pinCap[i];
-                    break;
-                }
-            }
-        }
-        cell->outputLoad = outputLoad;
-    }
-}
-
-#if TESTMODE
-void STA::dumpOutputLoad(){
-    ofstream output("312510224_" + netlistName + "_load.txt");
-    vector<pair<size_t,Cell*>> cells(cellMap.begin(),cellMap.end());
-    sort(cells.begin(),cells.end(), [](const pair<size_t,Cell*> &p1, const pair<size_t,Cell*> &p2){
-        if(p1.second->outputLoad == p2.second->outputLoad){
-            return stoi(p1.second->name.substr(1)) < stoi(p2.second->name.substr(1));
-        }
-        return p1.second->outputLoad > p2.second->outputLoad;
-    });
-    for(const pair<size_t,Cell*> &p : cells){
-        Cell* cell = p.second;
-        output << cell->name << ' ' 
-               << fixed << setprecision(6) 
-               << cell->outputLoad << '\n';
-    }
-    output.close();
-}
-#else
-void STA::dumpOutputLoad(){
-    ofstream output("312510224_" + netlistName + "_load.txt");
-    for(const pair<size_t,Cell*> &p : cellMap){
-        Cell* cell = p.second;
-        output << cell->name << ' ' 
-               << fixed << setprecision(6) 
-               << cell->outputLoad << '\n';
-    }
-    output.close();
-}
-#endif
-
-
 /*
 * @brief 
 * Sort the cells by their indegree and store the result into vector<Cell*> t_sort
@@ -303,6 +254,31 @@ void STA::topologicalSort(){
         }
     }
     assert(t_sort.size() == cellMap.size());
+}
+
+void STA::calOutputLoad(){
+    ofstream fout("312510224_" + netlistName + "_load.txt");
+    // Traverse all cell
+    for(Cell* const &cell: t_sort){
+        // Calculate output load of current cell
+        double outputLoad = 0.0;
+        if(cell->outputNet->type == output) outputLoad += OUTPUT_LOAD;
+        for(Cell* outputCell:cell->outputNet->outputCell){
+            for(size_t i = 0; i < outputCell->inputNet.size(); i++){
+                Net* net = outputCell->inputNet[i];
+                if(net == cell->outputNet){
+                    outputLoad += cellLib.cellInfos[outputCell->type]->pinCap[i];
+                    break;
+                }
+            }
+        }
+        cell->outputLoad = outputLoad;
+        
+        fout << cell->name << ' ' 
+             << fixed << setprecision(6) 
+             << outputLoad << '\n';
+    }
+    fout.close();
 }
 
 double STA::interpolate(
@@ -405,7 +381,7 @@ void STA::calInputTransitionTime(Cell* const &cell){
 }
 
 void STA::calPropagationDelay(){
-    topologicalSort();
+    ofstream fout("312510224_" + netlistName + "_delay.txt");
     // Traverse netlist in topological order
     for(Cell* const &cell : t_sort){
         calInputTransitionTime(cell);
@@ -422,41 +398,17 @@ void STA::calPropagationDelay(){
             cell->outputTransition = tableLookUp(cell,fall_transition);
             cell->worstCaseValue = LOW;
         }
+        fout << cell->name << " " 
+             << cell->worstCaseValue << " " 
+             << fixed << setprecision(6)
+             << cell->delay << " " 
+             << cell->outputTransition << '\n';
     }
+    fout.close();
 }
 
-#if TESTMODE
-void STA::dumpDelay(){
-    ofstream output("312510224_" + netlistName + "_delay.txt");
-    vector<Cell*> cells(t_sort.begin(),t_sort.end());
-    sort(cells.begin(),cells.end(),[](Cell* c1, Cell* c2){
-        return c1->number < c2->number;
-    });
-    for(Cell* &cell : cells){
-        output << cell->name << " " 
-               << cell->worstCaseValue << " " 
-               << fixed << setprecision(6)
-               << cell->delay << " " 
-               << cell->outputTransition << '\n';
-    }
-    output.close();
-}
-#else 
-void STA::dumpDelay(){
-    ofstream output("312510224_" + netlistName + "_delay.txt");
-    for(const Cell* const &cell : t_sort){
-        output << cell->name << " " 
-               << cell->worstCaseValue << " " 
-               << fixed << setprecision(6)
-               << cell->delay << " " 
-               << cell->outputTransition << '\n';
-    }
-    output.close();
-}
-#endif
-
-list<Net*> STA::findPath(Cell* cell){
-    list<Net*> path;
+vector<Net*> STA::findPath(Cell* cell){
+    vector<Net*> path;
     while(cell != nullptr){
         path.push_back(cell->outputNet);
         if(cell->prevCell == nullptr) path.push_back(cell->inputNet[0]);
@@ -525,7 +477,7 @@ void STA::calInputTransitionTime_Simulate(Cell* const &cell){
     // NANDX1, NOR2X1
     const Net* const &A1 = cell->inputNet[0];
     const Net* const &A2 = cell->inputNet[1];
-    if(A1->type == input && cell->inputNet[1]->type == input){
+    if(A1->type == input && A2->type == input){
         cell->inputTransition = 0.0;
         cell->arrivalTime = 0.0;
     }
@@ -597,7 +549,8 @@ void STA::calInputTransitionTime_Simulate(Cell* const &cell){
 }
 
 void STA::simulate(const vector<char> &pattern){
-    for(size_t i = 0; i < pattern.size(); i++){
+    size_t patternSize = pattern.size();
+    for(size_t i = 0; i < patternSize; i++){
         netMap.at(patternOrder[i])->value = pattern[i];
     }
     // Traverse netlist in topological order
