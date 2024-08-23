@@ -15,7 +15,7 @@ Cell::Cell():
 
 Cell::Cell(
     string &cellName, 
-    CellType &cellType
+    CellType cellType
 ) : name(cellName),
     type(cellType),
     inputTransition(0.0),

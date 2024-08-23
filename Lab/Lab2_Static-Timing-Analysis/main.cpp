@@ -23,20 +23,17 @@ int main(int argc, char* argv[]) {
     auto start = std::chrono::high_resolution_clock::now();
     #endif
     sta.verilogParser(netlistPath);
-    #if PRINTTIME
-    auto end = std::chrono::high_resolution_clock::now();
-    std::chrono::duration<double, std::milli> duration = end - start;
-    cout << duration.count() << " ms" << std::endl;
-    #endif
     sta.libraryParser(libraryPath);
     sta.patternParser(patternPath);
     sta.topologicalSort();
 
     // Step 1
     sta.calOutputLoad();
+    sta.dumpOutputLoad();
 
     // Step 2
     sta.calPropagationDelay();
+    sta.dumpPropagationDelay();
 
     // Step 3
     sta.pathFinding();
@@ -45,6 +42,11 @@ int main(int argc, char* argv[]) {
     // Step 4
     sta.assignPattern();
     
+    #if PRINTTIME
+    auto end = std::chrono::high_resolution_clock::now();
+    std::chrono::duration<double, std::milli> duration = end - start;
+    cout << duration.count() << " ms" << std::endl;
+    #endif
 
     return 0;
 }

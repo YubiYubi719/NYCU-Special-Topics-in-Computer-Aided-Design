@@ -71,8 +71,7 @@ void STA::verilogParser(const string &netlistPath){
         else if(opType[1] == 'N' || opType[1] == 'A' || opType[1] == 'O'){
             // Extract cellName
             ss >> cellName;
-            CellType cellType = str2CellType(opType);
-            Cell* cell = new Cell(cellName,cellType);
+            Cell* cell = new Cell(cellName,str2CellType(opType));
 
             while(ss >> curLine){
                 // input net
@@ -257,7 +256,6 @@ void STA::topologicalSort(){
 }
 
 void STA::calOutputLoad(){
-    ofstream fout("312510224_" + netlistName + "_load.txt");
     // Traverse all cell
     for(Cell* const &cell: t_sort){
         // Calculate output load of current cell
@@ -273,10 +271,16 @@ void STA::calOutputLoad(){
             }
         }
         cell->outputLoad = outputLoad;
-        
+    }
+}
+
+void STA::dumpOutputLoad(){
+    ofstream fout("312510224_" + netlistName + "_load.txt");
+    // Traverse all cell
+    for(Cell* const &cell: t_sort){
         fout << cell->name << ' ' 
              << fixed << setprecision(6) 
-             << outputLoad << '\n';
+             << cell->outputLoad << '\n';
     }
     fout.close();
 }
@@ -381,7 +385,6 @@ void STA::calInputTransitionTime(Cell* const &cell){
 }
 
 void STA::calPropagationDelay(){
-    ofstream fout("312510224_" + netlistName + "_delay.txt");
     // Traverse netlist in topological order
     for(Cell* const &cell : t_sort){
         calInputTransitionTime(cell);
@@ -398,6 +401,12 @@ void STA::calPropagationDelay(){
             cell->outputTransition = tableLookUp(cell,fall_transition);
             cell->worstCaseValue = LOW;
         }
+    }
+}
+
+void STA::dumpPropagationDelay(){
+    ofstream fout("312510224_" + netlistName + "_delay.txt");
+    for(Cell* const &cell : t_sort){
         fout << cell->name << " " 
              << cell->worstCaseValue << " " 
              << fixed << setprecision(6)

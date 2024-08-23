@@ -10,10 +10,10 @@
 using namespace std;
 
 class STA{
-public:
 //  *********************************
 //  *    Constructor & Destructor   *
 //  *********************************
+public:
     STA();
     ~STA();
 
@@ -21,14 +21,22 @@ public:
 //  *        Member Functions       *
 //  *********************************
     // Parser
-    string removeComment(string &code);
+public:
     void verilogParser(const string &netlistPath);
     void libraryParser(const string &libraryPath);
     void patternParser(const string &patternPath);
     void topologicalSort();
+private:
+    string removeComment(string &code);
     // Step 1
+public:
     void calOutputLoad();
+    void dumpOutputLoad();
     // Step 2
+public:
+    void calPropagationDelay();
+    void dumpPropagationDelay();
+private:
     double interpolate(
         const double &inputTransition,
         const double &outputLoad,
@@ -38,21 +46,24 @@ public:
     );
     double tableLookUp(const Cell* const &cell, const TableType &tableType);
     void calInputTransitionTime(Cell* const &cell);
-    void calPropagationDelay();
     // Step 3
-    vector<Net*> findPath(Cell* cell);
+public:
     void pathFinding();
     void dumpPath();
+private:
+    vector<Net*> findPath(Cell* cell);
     // Step 4
+public:
+    void assignPattern();
+private:
     void calInputTransitionTime_Simulate(Cell* const &cell);
     void simulate(const vector<char> &pattern);
-    void assignPattern();
     void dumpGateInfo(ofstream &output, const vector<Cell*> &cells);
 
-private:
 //  *********************************
 //  *        Member Variables       *
 //  *********************************
+private:
     size_t inputNum; // number of input net
     string netlistName;
     string patternName;
