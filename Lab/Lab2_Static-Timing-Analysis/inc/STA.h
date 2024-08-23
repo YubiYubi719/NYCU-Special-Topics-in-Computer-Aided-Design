@@ -21,22 +21,27 @@ public:
 //  *        Member Functions       *
 //  *********************************
     // Parser
-public:
     void verilogParser(const string &netlistPath);
     void libraryParser(const string &libraryPath);
     void patternParser(const string &patternPath);
     void topologicalSort();
-private:
-    string removeComment(string &code);
     // Step 1
-public:
     void calOutputLoad();
     void dumpOutputLoad();
     // Step 2
-public:
     void calPropagationDelay();
     void dumpPropagationDelay();
+    // Step 3
+    void pathFinding();
+    void dumpPath();
+    // Step 4
+    void assignPattern();
+
 private:
+//  *********************************
+//  *        Member Functions       *
+//  *********************************
+    string removeComment(string &code);
     double interpolate(
         const double &inputTransition,
         const double &outputLoad,
@@ -46,16 +51,7 @@ private:
     );
     double tableLookUp(const Cell* const &cell, const TableType &tableType);
     void calInputTransitionTime(Cell* const &cell);
-    // Step 3
-public:
-    void pathFinding();
-    void dumpPath();
-private:
     vector<Net*> findPath(Cell* cell);
-    // Step 4
-public:
-    void assignPattern();
-private:
     void calInputTransitionTime_Simulate(Cell* const &cell);
     void simulate(const vector<char> &pattern);
     void dumpGateInfo(ofstream &output, const vector<Cell*> &cells);
@@ -63,7 +59,6 @@ private:
 //  *********************************
 //  *        Member Variables       *
 //  *********************************
-private:
     size_t inputNum; // number of input net
     string netlistName;
     string patternName;

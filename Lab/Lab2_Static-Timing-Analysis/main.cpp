@@ -15,13 +15,13 @@ void extractPath(int argc, char* argv[]) {
 }
 
 int main(int argc, char* argv[]) {
+    #if PRINTTIME
+    auto start = std::chrono::high_resolution_clock::now();
+    #endif
 
     STA sta;
     extractPath(argc, argv);
     
-    #if PRINTTIME
-    auto start = std::chrono::high_resolution_clock::now();
-    #endif
     sta.verilogParser(netlistPath);
     sta.libraryParser(libraryPath);
     sta.patternParser(patternPath);
