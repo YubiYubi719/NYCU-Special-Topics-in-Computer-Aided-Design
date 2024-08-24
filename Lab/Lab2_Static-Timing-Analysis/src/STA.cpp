@@ -10,6 +10,49 @@ STA::~STA(){
 }
 
 string STA::removeComment(string &code){
+    // Since this lab only have following 2 case of comment:
+    // 1. // ...， and there's no /**/ after //
+    // 2. /**/，and there's no // between /* and */
+
+    // Also, there's no comment inside a single command
+    // Ex:
+    // 1. output /*fdsg*//*htrghr*/ N22,
+    // 2. N/*;*/23;
+    // 3. NOR2X1
+    //    U8 (./*(fdfsgsku*/A1(n8), .A2(n9), .ZN(N23));
+    // 4. NOR2X1 U9 /*ffffgfg/*ddasdda*/(.A1(N2), /*stshrsrhadas*/.A2(N7), .ZN(n9));
+    // 5. INVX1 U10 (.I(n10), /*AAAAdsadsadsad*/ .ZN(n8));
+    // 6. NANDX1 U12 (.A1(N2), /*aaas
+    //    dsad*/ .A2(n10), .ZN(n12))
+    // 7. NANDX1 U14 ( .A1(N1), .A2(N3), /*sagtrshyrjhrd*/.ZN(n11));
+    string cleanCode;
+    size_t codeSize = code.size();
+    cleanCode.reserve(codeSize);
+    bool in_block_comment = false;
+    bool in_line_comment = false;
+    size_t i = 0;
+    while (i < codeSize) {
+        if (!in_block_comment && !in_line_comment && (i+1) < codeSize && (code[i] == '/' && code[i+1] == '*')){
+            in_block_comment = true;
+            i += 2;
+        }
+        else if (in_block_comment && (i+1) < codeSize && (code[i] == '*' && code[i+1] == '/')){
+            in_block_comment = false;
+            i += 2;
+        }
+        else if (!in_block_comment && !in_line_comment && (i+1) < codeSize && code[i] == '/' && code[i+1] == '/'){
+            in_line_comment = true;
+            i += 2;
+        }
+        else if (in_line_comment && code[i] == '\n'){
+            in_line_comment = false;
+            cleanCode += '\n';
+            i++;
+        }
+        else if (!in_block_comment && !in_line_comment) cleanCode += code[i++];
+        else i++;
+    }
+
     // Reminder:
     // If you want to remove comment inside hellish or c17_comment, use following regular expression
     // However, it's quite slow
@@ -22,34 +65,6 @@ string STA::removeComment(string &code){
 
     // Remove //...
     // code = regex_replace(code, Comment_Pattern_3, "");
-
-    string cleanCode;
-    size_t codeSize = code.size();
-    cleanCode.reserve(codeSize);
-    bool in_block_comment = false;
-    bool in_line_comment = false;
-    size_t i = 0;
-    while (i < codeSize) {
-        if (!in_block_comment && !in_line_comment && i + 1 < codeSize && code[i] == '/' && code[i + 1] == '*'){
-            in_block_comment = true;
-            i += 2;
-        }
-        else if (in_block_comment && i + 1 < codeSize && code[i] == '*' && code[i + 1] == '/'){
-            in_block_comment = false;
-            i += 2;
-        }
-        else if (!in_block_comment && !in_line_comment && i + 1 < codeSize && code[i] == '/' && code[i + 1] == '/'){
-            in_line_comment = true;
-            i += 2;
-        }
-        else if (in_line_comment && code[i] == '\n'){
-            in_line_comment = false;
-            cleanCode += '\n';
-            i++;
-        }
-        else if (!in_block_comment && !in_line_comment) cleanCode += code[i++];
-        else i++;
-    }
 
     string curLine;
     stringstream ss(cleanCode);
@@ -73,13 +88,13 @@ void STA::verilogParser(const string &netlistPath){
     ifstream fin(netlistPath);
     string commentedCode, curLine;
     while(getline(fin,curLine,';')){ commentedCode += curLine + ";\n"; }
+    fin.close();
     string cleanCode;
     cleanCode.reserve(commentedCode.size());
     cleanCode = removeComment(commentedCode);
     // add space
     cleanCode = regex_replace(cleanCode,Word_Pattern," $& ");
     // cout << cleanCode << '\n';
-    fin.close();
     
     // Parse 
     stringstream ss_code(cleanCode), ss;
