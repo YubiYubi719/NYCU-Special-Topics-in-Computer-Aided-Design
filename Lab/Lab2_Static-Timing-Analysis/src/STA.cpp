@@ -314,7 +314,7 @@ void STA::calOutputLoad(){
         // Calculate output load of current cell
         double outputLoad = 0.0;
         if(cell->outputNet->type == output) outputLoad += OUTPUT_LOAD;
-        for(Cell* outputCell:cell->outputNet->outputCell){
+        for(const Cell* const &outputCell : cell->outputNet->outputCell){
             for(size_t i = 0; i < outputCell->inputNet.size(); i++){
                 Net* net = outputCell->inputNet[i];
                 if(net == cell->outputNet){
