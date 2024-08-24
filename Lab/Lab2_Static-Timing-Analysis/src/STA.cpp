@@ -49,7 +49,21 @@ string STA::removeComment(const string &code){
             cleanCode += '\n';
             i++;
         }
-        else if (!multiLineCmt && !singleLineCmt) cleanCode += code[i++];
+        else if (!multiLineCmt && !singleLineCmt){
+            // add space between words and ( ) , ; .
+            if (code[i] == '(' || code[i] == ')' || code[i] == ',' || code[i] == '.'){
+                cleanCode += " ";
+                cleanCode += code[i++];
+                cleanCode += " ";
+            }
+            else if(code[i] == ';'){
+                cleanCode += " ";
+                cleanCode += code[i++];
+            }
+            else cleanCode += code[i++];
+
+            // cleanCode += code[i++];
+        }
         else i++;
     }
 
@@ -86,14 +100,16 @@ void STA::verilogParser(const string &netlistPath){
     
     // Read whole commented file into a string
     ifstream fin(netlistPath);
-    string commentedCode, curLine;
-    while(getline(fin,curLine,';')){ commentedCode += curLine + ";\n"; }
+    string curLine;
+    ostringstream oss;
+    while(getline(fin,curLine,';')){ oss << curLine << ";\n"; }
     fin.close();
+    string commentedCode = oss.str();
     string cleanCode;
     cleanCode.reserve(commentedCode.size());
     cleanCode = removeComment(commentedCode);
     // add space
-    cleanCode = regex_replace(cleanCode,Word_Pattern," $& ");
+    // cleanCode = regex_replace(cleanCode,Word_Pattern," $& ");
     // cout << cleanCode << '\n';
     
     // Parse 
