@@ -278,13 +278,19 @@ void STA::calOutputLoad(){
 }
 
 void STA::dumpOutputLoad(){
-    ofstream fout("312510224_" + netlistName + "_load.txt");
-    fout << fixed << setprecision(6);
+    ostringstream oss;
+    oss << fixed << setprecision(6);
     // Traverse all cell
     for(Cell* const &cell: t_sort){
-        fout << cell->name << ' ' 
-             << cell->outputLoad << '\n';
+        oss << cell->name << ' ' 
+            << cell->outputLoad << '\n';
     }
+    string result;
+    result.reserve(t_sort.size() * 20);
+    result = oss.str();
+
+    ofstream fout("312510224_" + netlistName + "_load.txt");
+    fout << result;
     fout.close();
 }
 
@@ -408,14 +414,20 @@ void STA::calPropagationDelay(){
 }
 
 void STA::dumpPropagationDelay(){
-    ofstream fout("312510224_" + netlistName + "_delay.txt");
-    fout << fixed << setprecision(6);
+    ostringstream oss;
+    oss << fixed << setprecision(6);
     for(Cell* const &cell : t_sort){
-        fout << cell->name << " " 
-             << cell->worstCaseValue << " " 
-             << cell->delay << " " 
-             << cell->outputTransition << '\n';
+        oss << cell->name << " " 
+            << cell->worstCaseValue << " " 
+            << cell->delay << " " 
+            << cell->outputTransition << '\n';
     }
+    string result;
+    result.reserve(t_sort.size() * 30);
+    result = oss.str();
+
+    ofstream fout("312510224_" + netlistName + "_delay.txt");
+    fout << result;
     fout.close();
 }
 
