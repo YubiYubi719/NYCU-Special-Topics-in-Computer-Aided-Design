@@ -13,7 +13,10 @@ module c17 (N1, N2, N3, N6, N7, N22, N23);
 	INVX1 U10 (.I(n10), 
 	.ZN(n8)); /* commentcommentcommentcomment comment comment*/   NANDX1 U11 (.A1(n11), . A2(n12), .ZN(N22)
 	);
-	NANDX1 U12 (.A1(N2), .A2(n10), .ZN(n12)); // comment /* hh h */
+	  NANDX1 U12 (.A1(N2), .A2(n10), .ZN(n12)); // comment /* hh h */
 	NANDX1 		U13 (.A1(N6), .A2(N3), .ZN(n10  ));//comme nt
-	NANDX1 U14 (.A1(N1), .A2(N3), .ZN(n11)  );
+	
+	
+	
+	  NANDX1 U14 (.A1(N1), .A2(N3), .ZN(n11)  );
 endmodule
