@@ -2,7 +2,6 @@
 #define STA_H
 #include <bits/stdc++.h>
 #include <regex>
-#include <omp.h>
 #include "Util.h"
 #include "Net.h"
 #include "Cell.h"
@@ -41,7 +40,7 @@ private:
 //  *********************************
 //  *        Member Functions       *
 //  *********************************
-    string removeComment(string &code);
+    string removeComment(const string &code);
     double interpolate(
         const double &inputTransition,
         const double &outputLoad,

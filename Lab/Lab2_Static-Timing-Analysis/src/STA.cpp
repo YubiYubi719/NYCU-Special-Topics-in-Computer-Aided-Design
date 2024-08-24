@@ -9,7 +9,7 @@ STA::~STA(){
     for(const pair<const size_t,Cell*> &p : cellMap) delete p.second;
 }
 
-string STA::removeComment(string &code){
+string STA::removeComment(const string &code){
     // Since this lab only have following 2 case of comment:
     // 1. // ...， and there's no /**/ after //
     // 2. /**/，and there's no // between /* and */
@@ -28,28 +28,28 @@ string STA::removeComment(string &code){
     string cleanCode;
     size_t codeSize = code.size();
     cleanCode.reserve(codeSize);
-    bool in_block_comment = false;
-    bool in_line_comment = false;
+    bool multiLineCmt = false;
+    bool singleLineCmt = false;
     size_t i = 0;
     while (i < codeSize) {
-        if (!in_block_comment && !in_line_comment && (i+1) < codeSize && (code[i] == '/' && code[i+1] == '*')){
-            in_block_comment = true;
+        if (!multiLineCmt && !singleLineCmt && (i+1) < codeSize && (code[i] == '/' && code[i+1] == '*')){
+            multiLineCmt = true;
             i += 2;
         }
-        else if (in_block_comment && (i+1) < codeSize && (code[i] == '*' && code[i+1] == '/')){
-            in_block_comment = false;
+        else if (multiLineCmt && (i+1) < codeSize && (code[i] == '*' && code[i+1] == '/')){
+            multiLineCmt = false;
             i += 2;
         }
-        else if (!in_block_comment && !in_line_comment && (i+1) < codeSize && code[i] == '/' && code[i+1] == '/'){
-            in_line_comment = true;
+        else if (!multiLineCmt && !singleLineCmt && (i+1) < codeSize && code[i] == '/' && code[i+1] == '/'){
+            singleLineCmt = true;
             i += 2;
         }
-        else if (in_line_comment && code[i] == '\n'){
-            in_line_comment = false;
+        else if (singleLineCmt && code[i] == '\n'){
+            singleLineCmt = false;
             cleanCode += '\n';
             i++;
         }
-        else if (!in_block_comment && !in_line_comment) cleanCode += code[i++];
+        else if (!multiLineCmt && !singleLineCmt) cleanCode += code[i++];
         else i++;
     }
 
@@ -328,19 +328,14 @@ void STA::calOutputLoad(){
 }
 
 void STA::dumpOutputLoad(){
-    ostringstream oss;
-    oss << fixed << setprecision(6);
+    ofstream fout("312510224_" + netlistName + "_load.txt");
+    fout << fixed << setprecision(6);
     // Traverse all cell
     for(Cell* const &cell: t_sort){
-        oss << cell->name << ' ' 
-            << cell->outputLoad << '\n';
+        fout << cell->name << ' ' 
+             << cell->outputLoad << '\n';
     }
-    string result;
-    result.reserve(t_sort.size() * 20);
-    result = oss.str();
 
-    ofstream fout("312510224_" + netlistName + "_load.txt");
-    fout << result;
     fout.close();
 }
 
@@ -464,20 +459,14 @@ void STA::calPropagationDelay(){
 }
 
 void STA::dumpPropagationDelay(){
-    ostringstream oss;
-    oss << fixed << setprecision(6);
-    for(Cell* const &cell : t_sort){
-        oss << cell->name << " " 
-            << cell->worstCaseValue << " " 
-            << cell->delay << " " 
-            << cell->outputTransition << '\n';
-    }
-    string result;
-    result.reserve(t_sort.size() * 30);
-    result = oss.str();
-
     ofstream fout("312510224_" + netlistName + "_delay.txt");
-    fout << result;
+    fout << fixed << setprecision(6);
+    for(Cell* const &cell : t_sort){
+        fout << cell->name << " " 
+             << cell->worstCaseValue << " " 
+             << cell->delay << " " 
+             << cell->outputTransition << '\n';
+    }
     fout.close();
 }
 
