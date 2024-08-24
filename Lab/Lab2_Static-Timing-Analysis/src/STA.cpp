@@ -22,8 +22,9 @@ string STA::removeComment(string &code){
     string result, curLine;
     stringstream ss(code);
     // Remove redundant space and add newline after ';'
-    while(ss >> curLine){
-        result += (curLine.back() == ';')? curLine+"\n" : curLine+" ";
+    while(getline(ss,curLine)){
+        result += curLine;
+        if(curLine.back() == ';') result += "\n";
     }
 
     return result;
