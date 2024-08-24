@@ -19,7 +19,6 @@ enum CellType{
     INVX1
 };
 
-
 enum NetType{
     input,
     output,
