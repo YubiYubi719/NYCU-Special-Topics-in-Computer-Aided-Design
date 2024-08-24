@@ -6,7 +6,7 @@ module c17 (N1, N2, N3, N6, N7, N22, N23);
 // hhhh
 		// hahaBananice3
 /* commentcommentcommentcomment comment comment
-		*/
+		*/ //1111
 	
 	wire n8, n9, n10, n11, n12;
 	NOR2X1 U8 (.A1(n8), .A2(n9), .ZN(N23));NOR2X1 U9 (.A1(N2), .A2(N7), .ZN(n9));

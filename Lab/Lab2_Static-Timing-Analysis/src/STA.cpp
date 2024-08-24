@@ -279,10 +279,10 @@ void STA::calOutputLoad(){
 
 void STA::dumpOutputLoad(){
     ofstream fout("312510224_" + netlistName + "_load.txt");
+    fout << fixed << setprecision(6);
     // Traverse all cell
     for(Cell* const &cell: t_sort){
         fout << cell->name << ' ' 
-             << fixed << setprecision(6) 
              << cell->outputLoad << '\n';
     }
     fout.close();
@@ -409,10 +409,10 @@ void STA::calPropagationDelay(){
 
 void STA::dumpPropagationDelay(){
     ofstream fout("312510224_" + netlistName + "_delay.txt");
+    fout << fixed << setprecision(6);
     for(Cell* const &cell : t_sort){
         fout << cell->name << " " 
              << cell->worstCaseValue << " " 
-             << fixed << setprecision(6)
              << cell->delay << " " 
              << cell->outputTransition << '\n';
     }
@@ -451,8 +451,8 @@ void STA::pathFinding(){
 
 void STA::dumpPath(){
     ofstream output("312510224_" + netlistName + "_path.txt");
+    output << fixed << setprecision(6);
     output << "Longest delay = " 
-           << fixed << setprecision(6)
            << maxDelay << ", the path is: ";
     for(auto iter = longestPath.rbegin(); iter != longestPath.rend(); iter++){
         output << (*iter)->name << " ";
@@ -460,7 +460,6 @@ void STA::dumpPath(){
     }
     output << '\n';
     output << "Shortest delay = " 
-           << fixed << setprecision(6)
            << minDelay << ", the path is: ";
     for(auto iter = shortestPath.rbegin(); iter != shortestPath.rend(); iter++){
         output << (*iter)->name << " ";
@@ -584,21 +583,27 @@ void STA::simulate(const vector<char> &pattern){
 }
 
 void STA::assignPattern(){
-    ofstream output("312510224_" + netlistName + "_gate_info.txt");
     vector<Cell*> cellsInGateOrder(t_sort);
+    string result;
+    result.reserve(patterns.size()*t_sort.size()*30);
+    ostringstream oss;
+    oss << fixed << setprecision(6);
     sort(cellsInGateOrder.begin(), cellsInGateOrder.end(), Cell::cmpWithGateOrder);
     for(vector<char> pattern : patterns){
         simulate(pattern);
-        dumpGateInfo(output,cellsInGateOrder);
+        dumpGateInfo(oss,cellsInGateOrder);
     }
+
+    ofstream output("312510224_" + netlistName + "_gate_info.txt");
+    output << oss.str();
+
     output.close();
 }
 
-void STA::dumpGateInfo(ofstream &output, const vector<Cell*> &cells){
+void STA::dumpGateInfo(ostringstream &output, const vector<Cell*> &cells){
     for(const Cell* const &cell : cells){
         output << cell->name  << " " 
                << cell->value << " "
-               << fixed << setprecision(6)
                << cell->delay << " "
                << cell->outputTransition << '\n';
     }
