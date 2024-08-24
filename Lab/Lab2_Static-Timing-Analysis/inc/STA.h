@@ -53,7 +53,7 @@ private:
     vector<Net*> findPath(Cell* cell);
     void calInputTransitionTime_Simulate(Cell* const &cell);
     void simulate(const vector<char> &pattern);
-    void dumpGateInfo(ostringstream &output, const vector<Cell*> &cells);
+    void dumpGateInfo(ostringstream &oss, const vector<Cell*> &cells);
 
 //  *********************************
 //  *        Member Variables       *

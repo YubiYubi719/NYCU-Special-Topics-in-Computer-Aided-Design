@@ -169,7 +169,7 @@ void STA::libraryParser(const string &filename){
     while(getline(input,curLine)) libStr += curLine + '\n';
     input.close();
     // Add \n after every "}"
-    regex_replace(libStr,regex("}"),"}\n");
+    // regex_replace(libStr,regex("}"),"}\n");
 
     stringstream ss(libStr);
     while(getline(ss,curLine)){
@@ -347,18 +347,18 @@ double STA::interpolate(
     const double &row_idx
 ){
     size_t colSize = cellLib.index_1.size();
-    double col_1 = cellLib.index_1[col_idx-1];
-    double col_2 = cellLib.index_1[col_idx];
-    double row_1 = cellLib.index_2[row_idx-1];
-    double row_2 = cellLib.index_2[row_idx];
+    const double &col_1 = cellLib.index_1[col_idx-1];
+    const double &col_2 = cellLib.index_1[col_idx];
+    const double &row_1 = cellLib.index_2[row_idx-1];
+    const double &row_2 = cellLib.index_2[row_idx];
 
-    double col_1_row_1_val = table[(col_idx-1) + (row_idx-1) * colSize];
-    double col_2_row_1_val = table[(col_idx)   + (row_idx-1) * colSize];
-    double col_1_row_2_val = table[(col_idx-1) + (row_idx)   * colSize];
-    double col_2_row_2_val = table[(col_idx)   + (row_idx)   * colSize];
+    const double &col_1_row_1_val = table[(col_idx-1) + (row_idx-1) * colSize];
+    const double &col_2_row_1_val = table[(col_idx)   + (row_idx-1) * colSize];
+    const double &col_1_row_2_val = table[(col_idx-1) + (row_idx)   * colSize];
+    const double &col_2_row_2_val = table[(col_idx)   + (row_idx)   * colSize];
 
-    double A = col_1_row_1_val + (col_2_row_1_val-col_1_row_1_val) / (col_2-col_1) * (outputLoad-col_1);
-    double B = col_1_row_2_val + (col_2_row_2_val-col_1_row_2_val) / (col_2-col_1) * (outputLoad-col_1);
+    const double A = col_1_row_1_val + (col_2_row_1_val-col_1_row_1_val) / (col_2-col_1) * (outputLoad-col_1);
+    const double B = col_1_row_2_val + (col_2_row_2_val-col_1_row_2_val) / (col_2-col_1) * (outputLoad-col_1);
 
     return A + (B-A) / (row_2-row_1) * (inputTransition-row_1);
 }
@@ -368,33 +368,42 @@ double STA::tableLookUp(const Cell* const &cell, const TableType &tableType){
     //If larger, use binary search
     size_t colSize = cellLib.index_1.size();
     size_t rowSize = cellLib.index_2.size();
+    const double &outputLoad = cell->outputLoad;
+    const double &inputTransition = cell->inputTransition;
     for(index_1_idx = 0; index_1_idx < colSize; index_1_idx++){
-        if(cellLib.index_1[index_1_idx] > cell->outputLoad) break;
+        if(cellLib.index_1[index_1_idx] > outputLoad) break;
     }
     if(index_1_idx == 0) index_1_idx = 1;
     else if(index_1_idx == colSize) index_1_idx = colSize - 1;
 
     for(index_2_idx = 0; index_2_idx < rowSize; index_2_idx++){
-        if(cellLib.index_2[index_2_idx] > cell->inputTransition) break;
+        if(cellLib.index_2[index_2_idx] > inputTransition) break;
     }
     if(index_2_idx == 0) index_2_idx = 1;
     else if(index_2_idx == rowSize) index_2_idx = rowSize - 1;
 
     const vector<double> &table = cellLib.cellInfos[cell->type]->tables[tableType];
     
-    return interpolate(cell->inputTransition,cell->outputLoad,table,index_1_idx,index_2_idx);
+    return interpolate(
+        cell->inputTransition,
+        cell->outputLoad,
+        table,
+        index_1_idx,
+        index_2_idx
+    );
 }
 
 void STA::calInputTransitionTime(Cell* const &cell){
     assert(cell->inputNet.size() == 1 || cell->inputNet.size() == 2);
     // INVX1
     if(cell->type == INVX1){
-        Cell* const &prevCell = cell->inputNet[0]->inputCell;
-        if(cell->inputNet[0]->type == input){
+        Net* const &I = cell->inputNet[0];
+        if(I->type == input){
             cell->inputTransition = 0.0;
             cell->arrivalTime = 0.0;
         }
-        else /* cell->inputNet[0]->type == wire or output */ {
+        else /* I->type == wire or output */ {
+            Cell* const &prevCell = I->inputCell;
             cell->inputTransition = prevCell->outputTransition;
             cell->arrivalTime = prevCell->arrivalTime + prevCell->delay + WIRE_DELAY;
             cell->prevCell = prevCell;
@@ -403,25 +412,27 @@ void STA::calInputTransitionTime(Cell* const &cell){
     }
 
     // NANDX1, NOR2X1
-    if(cell->inputNet[0]->type == input && cell->inputNet[1]->type == input){
+    const Net* const &A1 = cell->inputNet[0];
+    const Net* const &A2 = cell->inputNet[1];
+    if(A1->type == input && A2->type == input){
         cell->inputTransition = 0.0;
         cell->arrivalTime = 0.0;
     }
-    else if(cell->inputNet[0]->type != input && cell->inputNet[1]->type == input){
-        Cell* const &prevCell = cell->inputNet[0]->inputCell;
+    else if(A1->type != input && A2->type == input){
+        Cell* const &prevCell = A1->inputCell;
         cell->inputTransition = prevCell->outputTransition;
         cell->arrivalTime = prevCell->arrivalTime + prevCell->delay + WIRE_DELAY;
         cell->prevCell = prevCell;
     }
-    else if(cell->inputNet[0]->type == input && cell->inputNet[1]->type != input){
-        Cell* const &prevCell = cell->inputNet[1]->inputCell;
+    else if(A1->type == input && A2->type != input){
+        Cell* const &prevCell = A2->inputCell;
         cell->inputTransition = prevCell->outputTransition;
         cell->arrivalTime = prevCell->arrivalTime + prevCell->delay + WIRE_DELAY;
         cell->prevCell = prevCell;
     }
-    else /* cell->inputNet[0]->type != input && cell->inputNet[1]->type != input */ {
-        Cell* const &prevCell_0 = cell->inputNet[0]->inputCell;
-        Cell* const &prevCell_1 = cell->inputNet[1]->inputCell;
+    else /* A1->type != input && A2->type != input */ {
+        Cell* const &prevCell_0 = A1->inputCell;
+        Cell* const &prevCell_1 = A2->inputCell;
         // Choose the slower signal
         double arrival_0 = prevCell_0->arrivalTime + prevCell_0->delay + WIRE_DELAY;
         double arrival_1 = prevCell_1->arrivalTime + prevCell_1->delay + WIRE_DELAY;
@@ -523,16 +534,17 @@ void STA::calInputTransitionTime_Simulate(Cell* const &cell){
     assert(cell->inputNet.size() == 1 || cell->inputNet.size() == 2);
     // INVX1
     if(cell->type == INVX1){
-        if(cell->inputNet[0]->type == input){
+        Net* const &I = cell->inputNet[0];
+        if(I->type == input){
             cell->inputTransition = 0.0;
             cell->arrivalTime = 0.0;
         }
-        else /*cell->inputNet[0]->type == wire */ {
-            Cell* const &prevCell = cell->inputNet[0]->inputCell;
+        else /*I->type == wire */ {
+            Cell* const &prevCell = I->inputCell;
             cell->inputTransition = prevCell->outputTransition;
             cell->arrivalTime = prevCell->arrivalTime + prevCell->delay + WIRE_DELAY;
         }
-        cell->value = (cell->inputNet[0]->value == LOW)? HIGH : LOW;
+        cell->value = (I->value == LOW)? HIGH : LOW;
         return;
     }
 
@@ -640,7 +652,7 @@ void STA::assignPattern(){
     ostringstream oss;
     oss << fixed << setprecision(6);
     sort(cellsInGateOrder.begin(), cellsInGateOrder.end(), Cell::cmpWithGateOrder);
-    for(vector<char> pattern : patterns){
+    for(const vector<char> &pattern : patterns){
         simulate(pattern);
         dumpGateInfo(oss,cellsInGateOrder);
     }
@@ -651,12 +663,12 @@ void STA::assignPattern(){
     output.close();
 }
 
-void STA::dumpGateInfo(ostringstream &output, const vector<Cell*> &cells){
+void STA::dumpGateInfo(ostringstream &oss, const vector<Cell*> &cells){
     for(const Cell* const &cell : cells){
-        output << cell->name  << " " 
-               << cell->value << " "
-               << cell->delay << " "
-               << cell->outputTransition << '\n';
+        oss << cell->name  << " " 
+            << cell->value << " "
+            << cell->delay << " "
+            << cell->outputTransition << '\n';
     }
-    output << '\n';
+    oss << '\n';
 }
