@@ -10,24 +10,57 @@ STA::~STA(){
 }
 
 string STA::removeComment(string &code){
+    // Reminder:
+    // If you want to remove comment inside hellish or c17_comment, use following regular expression
+    // However, it's quite slow
+
     // Remove //... that does not contain */
     // code = regex_replace(code, Comment_Pattern_1, "");
     
     // Remove /*...*/ cross multi-line
-    code = regex_replace(code, Comment_Pattern_2, "");
+    // code = regex_replace(code, Comment_Pattern_2, "");
 
     // Remove //...
-    code = regex_replace(code, Comment_Pattern_3, "");
+    // code = regex_replace(code, Comment_Pattern_3, "");
 
-    string result, curLine;
-    stringstream ss(code);
-    // Remove redundant space and add newline after ';'
-    while(getline(ss,curLine)){
-        result += curLine;
-        if(curLine.back() == ';') result += "\n";
+    string cleanCode;
+    size_t codeSize = code.size();
+    cleanCode.reserve(codeSize);
+    bool in_block_comment = false;
+    bool in_line_comment = false;
+    size_t i = 0;
+    while (i < codeSize) {
+        if (!in_block_comment && !in_line_comment && i + 1 < codeSize && code[i] == '/' && code[i + 1] == '*'){
+            in_block_comment = true;
+            i += 2;
+        }
+        else if (in_block_comment && i + 1 < codeSize && code[i] == '*' && code[i + 1] == '/'){
+            in_block_comment = false;
+            i += 2;
+        }
+        else if (!in_block_comment && !in_line_comment && i + 1 < codeSize && code[i] == '/' && code[i + 1] == '/'){
+            in_line_comment = true;
+            i += 2;
+        }
+        else if (in_line_comment && code[i] == '\n'){
+            in_line_comment = false;
+            cleanCode += '\n';
+            i++;
+        }
+        else if (!in_block_comment && !in_line_comment) cleanCode += code[i++];
+        else i++;
     }
 
-    return result;
+    string curLine;
+    stringstream ss(cleanCode);
+    ostringstream oss;
+    // Remove redundant space and add newline after ';'
+    while(getline(ss,curLine)){
+        oss << curLine;
+        if(curLine.back() == ';') oss << "\n";
+    }
+
+    return oss.str();
 }
 
 void STA::verilogParser(const string &netlistPath){
@@ -40,7 +73,9 @@ void STA::verilogParser(const string &netlistPath){
     ifstream fin(netlistPath);
     string commentedCode, curLine;
     while(getline(fin,curLine,';')){ commentedCode += curLine + ";\n"; }
-    string cleanCode = removeComment(commentedCode);
+    string cleanCode;
+    cleanCode.reserve(commentedCode.size());
+    cleanCode = removeComment(commentedCode);
     // add space
     cleanCode = regex_replace(cleanCode,Word_Pattern," $& ");
     // cout << cleanCode << '\n';
