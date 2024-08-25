@@ -53,7 +53,7 @@ private:
     double interpolate(
         const double &inputTransition,
         const double &outputLoad,
-        const double *table, 
+        const double* const &table, 
         const size_t &col_idx, 
         const size_t &row_idx
     );

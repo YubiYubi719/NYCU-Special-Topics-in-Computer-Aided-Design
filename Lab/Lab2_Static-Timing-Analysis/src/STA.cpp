@@ -348,7 +348,7 @@ void STA::dumpOutputLoad(){
 double STA::interpolate(
     const double &inputTransition,
     const double &outputLoad,
-    const double *table, 
+    const double* const &table,
     const size_t &col_idx, 
     const size_t &row_idx
 ){
@@ -386,10 +386,7 @@ double STA::tableLookUp(const Cell* const &cell, const TableType &tableType){
     else if(index_2_idx == INDEXSIZE) index_2_idx = INDEXSIZE - 1;
 
     // const array<double,49> &table = cellLib.cellInfos[cell->type]->tables[tableType];
-    const double *table = nullptr;
-    if(cell->type == NOR2X1)       table = NOR2X1_table[tableType];
-    else if(cell->type == NANDX1)  table = NANDX1_table[tableType];
-    else /* cell->type == INVX1 */ table = INVX1_table[tableType];
+    const double* const &table = lookupTables[cell->type][tableType];
     
     return interpolate(
         cell->inputTransition,
@@ -401,7 +398,6 @@ double STA::tableLookUp(const Cell* const &cell, const TableType &tableType){
 }
 
 void STA::calInputTransitionTime(Cell* const &cell){
-    assert(cell->inputNet.size() == 1 || cell->inputNet.size() == 2);
     // INVX1
     if(cell->type == INVX1){
         Net* const &I = cell->inputNet[0];
@@ -626,7 +622,7 @@ void STA::calInputTransitionTime_Simulate(Cell* const &cell){
             }
         }
     }
-    cell->value = truthTable[cell->type]({A1->value,A2->value});
+    cell->value = truthTable[cell->type](A1->value,A2->value);
 }
 
 void STA::simulate(const vector<char> &pattern){
