@@ -10,7 +10,7 @@ module           c17 (N1, N2, N3,N6,
 n11 , n12
 ;
 	input               N1, N2,N3
- , N6,N7;
+ , N6,N7;     
 
 	output /*fdsg*//*htrghr*/ N22,
 	 	N/*;*/23;
@@ -24,7 +24,7 @@ n11 , n12
         Hello
         // World!*/
     NOR2X1
-U8 (./*(fdfsgsku*/A1(n8),   .A2(n9),  .ZN(N23));
+U8 (./*(fdfsgsku*/A1(n8),   .A2(n9),  .ZN(N23));   
 	  NOR2X1 U9 /*ffffgfg/*ddasdda*/(.A1(N2), /*stshrsrhadas*/.A2(N7), .ZN(n9));//dhjikb/*
 	INVX1 U10 (.I(n10), /*AAAAdsadsadsad*/ .ZN(n8));   //dghsrthrsu/*hstrtsrhrsgg?*/
     // dasdsadsadsad

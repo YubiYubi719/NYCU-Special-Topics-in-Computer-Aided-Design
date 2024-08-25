@@ -13,7 +13,7 @@ public:
     Cell(string &cellName, CellType cellType);
     ~Cell();
 
-    static bool cmpWithGateOrder(const Cell* const &cell_1, const Cell* const &cell_2);
+    static bool ascendingGateOrder(const Cell* const &cell_1, const Cell* const &cell_2);
 
     string name;
     CellType type;

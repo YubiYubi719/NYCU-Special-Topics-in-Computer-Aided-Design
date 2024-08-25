@@ -48,6 +48,6 @@ Cell::~Cell(){
     ;
 }
 
-bool Cell::cmpWithGateOrder(const Cell* const &cell_1, const Cell* const &cell_2){
+bool Cell::ascendingGateOrder(const Cell* const &cell_1, const Cell* const &cell_2){
     return cell_1->number < cell_2->number;
 }

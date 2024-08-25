@@ -10,21 +10,9 @@ STA::~STA(){
 }
 
 string STA::removeComment(const string &code){
-    // Since this lab only have following 2 case of comment:
-    // 1. // ...， and there's no /**/ after //
-    // 2. /**/，and there's no // between /* and */
-
-    // Also, there's no comment inside a single command
-    // Ex:
-    // 1. output /*fdsg*//*htrghr*/ N22,
-    // 2. N/*;*/23;
-    // 3. NOR2X1
-    //    U8 (./*(fdfsgsku*/A1(n8), .A2(n9), .ZN(N23));
-    // 4. NOR2X1 U9 /*ffffgfg/*ddasdda*/(.A1(N2), /*stshrsrhadas*/.A2(N7), .ZN(n9));
-    // 5. INVX1 U10 (.I(n10), /*AAAAdsadsadsad*/ .ZN(n8));
-    // 6. NANDX1 U12 (.A1(N2), /*aaas
-    //    dsad*/ .A2(n10), .ZN(n12))
-    // 7. NANDX1 U14 ( .A1(N1), .A2(N3), /*sagtrshyrjhrd*/.ZN(n11));
+    // ************************************
+    // *      Method 1 - Line by line     *
+    // ************************************
     string cleanCode;
     size_t codeSize = code.size();
     cleanCode.reserve(codeSize);
@@ -46,8 +34,7 @@ string STA::removeComment(const string &code){
         }
         else if (singleLineCmt && code[i] == '\n'){
             singleLineCmt = false;
-            cleanCode += '\n';
-            i++;
+            cleanCode += code[i++];
         }
         else if (!multiLineCmt && !singleLineCmt){
             // add space between words and ( ) , ; .
@@ -61,14 +48,16 @@ string STA::removeComment(const string &code){
                 cleanCode += code[i++];
             }
             else cleanCode += code[i++];
-
-            // cleanCode += code[i++];
         }
         else i++;
     }
 
+    // ************************************
+    // *      Method 2 - Regular expr     *
+    // ************************************
     // Reminder:
-    // If you want to remove comment inside hellish or c17_comment, use following regular expression
+    // If you want to remove comment by using regular expression,
+    // following 3 steps can remove all kinds of commands elegantly.
     // However, it's quite slow
 
     // Remove //... that does not contain */
@@ -81,11 +70,11 @@ string STA::removeComment(const string &code){
     // code = regex_replace(code, Comment_Pattern_3, "");
 
     string curLine;
-    stringstream ss(cleanCode);
+    stringstream iss(cleanCode);
     ostringstream oss;
     // Remove redundant space and add newline after ';'
-    while(getline(ss,curLine)){
-        oss << curLine;
+    while(getline(iss,curLine)){
+        oss << " " << curLine;
         if(curLine.back() == ';') oss << "\n";
     }
 
@@ -108,27 +97,24 @@ void STA::verilogParser(const string &netlistPath){
     string cleanCode;
     cleanCode.reserve(commentedCode.size());
     cleanCode = removeComment(commentedCode);
-    // add space
-    // cleanCode = regex_replace(cleanCode,Word_Pattern," $& ");
     // cout << cleanCode << '\n';
     
     // Parse 
-    stringstream ss_code(cleanCode), ss;
+    istringstream iss_code(cleanCode), iss;
     string opType;
     string netName;
     string cellName;
     string pin;
-    while(getline(ss_code,curLine)){
-        if(curLine.empty()) continue;
-        ss.clear();
-        ss.str(curLine);
+    while(getline(iss_code,curLine)){
+        iss.clear();
+        iss.str(curLine);
 
-        ss >> opType;
+        iss >> opType;
         // if(opType == "output" || opType == "input" || opType == "wire")
         if(opType[0] == 'o' || opType[0] == 'i' || opType[0] == 'w'){
-            // Use regular expression to extract netName
+            // Extract netName
             NetType netType = str2NetType(opType);
-            while(ss >> netName){
+            while(iss >> netName){
                 if(isalpha(netName[0])){
                     if(netType == input) inputNum++;
                     Net* net = new Net(netName,netType);
@@ -139,32 +125,32 @@ void STA::verilogParser(const string &netlistPath){
         // else if(opType == "INVX1" || opType == "NANDX1" || opType == "NOR2X1")
         else if(opType[1] == 'N' || opType[1] == 'A' || opType[1] == 'O'){
             // Extract cellName
-            ss >> cellName;
+            iss >> cellName;
             Cell* cell = new Cell(cellName,str2CellType(opType));
 
-            while(ss >> curLine){
+            while(iss >> curLine){
                 // input net
                 if(curLine == "A1"){
-                    ss >> netName >> netName; // ignore '('
+                    iss >> netName >> netName; // ignore '('
                     Net* &net = netMap.at(netName);
                     cell->inputNet[0] = net;
                     net->outputCell.push_back(cell);
                 }
                 else if(curLine == "A2"){
-                    ss >> netName >> netName; // ignore '('
+                    iss >> netName >> netName; // ignore '('
                     Net* &net = netMap.at(netName);
                     cell->inputNet[1] = net;
                     net->outputCell.push_back(cell);
                 }
                 else if(curLine == "I"){
-                    ss >> netName >> netName; // ignore '('
+                    iss >> netName >> netName; // ignore '('
                     Net* &net = netMap.at(netName);
                     cell->inputNet[0] = net;
                     net->outputCell.push_back(cell);
                 }
                 // output net
                 else if(curLine == "ZN"){
-                    ss >> netName >> netName; // ignore '('
+                    iss >> netName >> netName; // ignore '('
                     Net* outputNet = netMap.at(netName);
                     cell->outputNet = outputNet;
                     outputNet->inputCell = cell;
@@ -187,8 +173,8 @@ void STA::libraryParser(const string &filename){
     // Add \n after every "}"
     // regex_replace(libStr,regex("}"),"}\n");
 
-    stringstream ss(libStr);
-    while(getline(ss,curLine)){
+    istringstream iss(libStr);
+    while(getline(iss,curLine)){
         // Extract index_1
         if(regex_search(curLine,Index_1_Pattern)){
             while(regex_search(curLine,match,Float_Pattern)){
@@ -226,7 +212,7 @@ void STA::libraryParser(const string &filename){
             --> pin(A1) { direction : input; capacitance : 0.0105008; }
             */
             string pinStr = curLine;
-            while(getline(ss,curLine)){
+            while(getline(iss,curLine)){
                 pinStr += curLine;
                 if(curLine.back() == '}') break;
             }
@@ -254,7 +240,7 @@ void STA::libraryParser(const string &filename){
             --> cell_rise(table10){ values ("0.023104,0.026347,..., 0.30968,0.40393"); }
             */
             string timeStr = curLine;
-            while(getline(ss,curLine)){
+            while(getline(iss,curLine)){
                 timeStr += curLine;
                 if(curLine.back() == '}') break;
             }
@@ -283,13 +269,13 @@ void STA::patternParser(const string &patternPath){
     input.ignore(2,'\n');
 
     // Read pattern
-    stringstream ss;
+    istringstream iss;
     while(getline(input,curLine)){
         vector<char> pattern(inputNum);
         if(curLine == ".end") break;
-        ss.clear();
-        ss.str(curLine);
-        for(size_t i = 0; i < inputNum; i++) ss >> pattern[i];
+        iss.clear();
+        iss.str(curLine);
+        for(size_t i = 0; i < inputNum; i++) iss >> pattern[i];
         patterns.push_back(pattern);
     }
 }
@@ -302,7 +288,7 @@ void STA::topologicalSort(){
     queue<Cell*> q;
     for(const pair<const size_t,Cell*> &p : cellMap){
         Cell* cell = p.second;
-        for(Net* &net : cell->inputNet){
+        for(Net* const &net : cell->inputNet){
             if(net->type != input) cell->inDegree++;
         }
         if(cell->inDegree == 0){
@@ -667,7 +653,7 @@ void STA::assignPattern(){
     result.reserve(patterns.size()*t_sort.size()*30);
     ostringstream oss;
     oss << fixed << setprecision(6);
-    sort(cellsInGateOrder.begin(), cellsInGateOrder.end(), Cell::cmpWithGateOrder);
+    sort(cellsInGateOrder.begin(), cellsInGateOrder.end(), Cell::ascendingGateOrder);
     for(const vector<char> &pattern : patterns){
         simulate(pattern);
         dumpGateInfo(oss,cellsInGateOrder);
