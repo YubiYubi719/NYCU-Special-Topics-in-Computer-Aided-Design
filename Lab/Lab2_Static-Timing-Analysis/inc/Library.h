@@ -1,7 +1,6 @@
 #ifndef LIBRARY_H
 #define LIBRARY_H
-#include <bits/stdc++.h>
-#include <unordered_map>
+#include <array>
 #include "Util.h"
 #include "CellInfo.h"
 using namespace std;
@@ -11,10 +10,10 @@ public:
     Library();
     ~Library();
     
-    vector<double> index_1;
-    vector<double> index_2;
-    vector<CellInfo*> cellInfos; // index: CellType
-                                 // value: CellInfo
+    array<double,7> index_1;
+    array<double,7> index_2;
+    array<CellInfo*,3> cellInfos; // index: CellType
+                                  // value: CellInfo
 };
 
 #endif

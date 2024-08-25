@@ -26,21 +26,12 @@ Cell::Cell(
     inDegree(0),
     prevCell(nullptr),
     worstCaseValue(' '){
-    if(cellType == INVX1){
-        inputNet.resize(1);
-        controllingValue = DONTCARE; // both 0 and 1 are controlling value
-        type = INVX1;
-    }
-    else if(cellType == NANDX1){
-        inputNet.resize(2);
-        controllingValue = LOW;
-        type = NANDX1;
-    }
-    else /* cellType == NOR2X1 */ {
-        inputNet.resize(2);
-        controllingValue = HIGH;
-        type = NOR2X1;
-    }
+        
+    if(cellType == INVX1)         controllingValue = DONTCARE; // both 0 and 1 are controlling value
+    else if(cellType == NANDX1)   controllingValue = LOW;
+    else /* cellType == NOR2X1 */ controllingValue = HIGH;
+
+    inputNet = {{nullptr , nullptr}};
     number = stoi(cellName.substr(1));
 }
 

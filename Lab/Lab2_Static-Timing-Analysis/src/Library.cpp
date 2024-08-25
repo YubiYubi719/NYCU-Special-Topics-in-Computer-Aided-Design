@@ -1,9 +1,4 @@
 #include "Library.h"
 
-Library::Library(){
-    cellInfos.resize(3);
-}
-
-Library::~Library(){
-    ;
-}
+Library::Library() = default;
+Library::~Library() = default;

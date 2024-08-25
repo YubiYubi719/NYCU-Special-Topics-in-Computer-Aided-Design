@@ -1,6 +1,6 @@
 #ifndef CELL_H
 #define CELL_H
-#include <vector>
+#include <array>
 #include <string>
 #include "Util.h"
 using namespace std;
@@ -21,7 +21,7 @@ public:
     double outputLoad;
     double delay; // intrinsic cell delay (i.e. propagation delay)
     double arrivalTime; // sum of the total delay of the path from input til current cell input
-    vector<Net*> inputNet;
+    array<Net*,2> inputNet;
     Net* outputNet;
     int inDegree;
     Cell* prevCell; // record the gate of latest arrived signal

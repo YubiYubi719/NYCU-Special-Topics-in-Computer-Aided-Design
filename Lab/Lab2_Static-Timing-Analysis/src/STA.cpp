@@ -177,26 +177,28 @@ void STA::libraryParser(const string &filename){
     while(getline(iss,curLine)){
         // Extract index_1
         if(regex_search(curLine,Index_1_Pattern)){
+            size_t i = 0;
             while(regex_search(curLine,match,Float_Pattern)){
-                cellLib.index_1.push_back(stod(match.str()));
+                cellLib.index_1[i] = stod(match.str());
                 curLine = match.suffix().str();
+                i++;
             }
         }
 
         // Extract index_2
         else if(regex_search(curLine,Index_2_Pattern)){
+            size_t i = 0;
             while(regex_search(curLine,match,Float_Pattern)){
-                cellLib.index_2.push_back(stod(match.str()));
+                cellLib.index_2[i] = stod(match.str());
                 curLine = match.suffix().str();
+                i++;
             }
         }
 
         // Extract cell type
         else if(regex_search(curLine,match,Cell_Pattern)){
             cellType = str2CellType(match[1].str());
-            CellInfo* cell_info = new CellInfo;
-            if(cellType == NOR2X1 || cellType == NANDX1) cell_info->pinCap.resize(2);
-            cellLib.cellInfos[cellType] = cell_info;
+            cellLib.cellInfos[cellType] = new CellInfo;
         }
 
         // Extract input pin capacitance
@@ -217,9 +219,8 @@ void STA::libraryParser(const string &filename){
                 if(curLine.back() == '}') break;
             }
             regex_search(pinStr,match,Capacitance_Pattern);
-            if(pin == "A1")      cellLib.cellInfos[cellType]->pinCap[0] = stod(match[1].str());
-            else if(pin == "A2") cellLib.cellInfos[cellType]->pinCap[1] = stod(match[1].str());
-            else /*pin == "I"*/  cellLib.cellInfos[cellType]->pinCap.emplace_back(stod(match[1].str()));
+            if(pin == "A1" || pin == "I") cellLib.cellInfos[cellType]->pinCap[0] = stod(match[1].str());
+            else /* pin == "A2" */        cellLib.cellInfos[cellType]->pinCap[1] = stod(match[1].str());
         }
 
         // extract timing information
@@ -245,9 +246,11 @@ void STA::libraryParser(const string &filename){
                 if(curLine.back() == '}') break;
             }
             // Store timing table
+            size_t i = 0;
             while(regex_search(timeStr,match,Float_Pattern)){
-                cellLib.cellInfos[cellType]->tables[timeType].emplace_back(stod(match.str()));
+                cellLib.cellInfos[cellType]->tables[timeType][i] = stod(match.str());
                 timeStr = match.suffix().str();
+                i++;
             }
         }
     }
@@ -289,6 +292,7 @@ void STA::topologicalSort(){
     for(const pair<const size_t,Cell*> &p : cellMap){
         Cell* cell = p.second;
         for(Net* const &net : cell->inputNet){
+            if(net == nullptr) break;
             if(net->type != input) cell->inDegree++;
         }
         if(cell->inDegree == 0){
@@ -320,7 +324,7 @@ void STA::calOutputLoad(){
             for(size_t i = 0; i < outputCell->inputNet.size(); i++){
                 Net* net = outputCell->inputNet[i];
                 if(net == cell->outputNet){
-                    outputLoad += cellLib.cellInfos[outputCell->type]->pinCap[i];
+                    outputLoad += pinCap[outputCell->type][i];
                     break;
                 }
             }
@@ -344,20 +348,19 @@ void STA::dumpOutputLoad(){
 double STA::interpolate(
     const double &inputTransition,
     const double &outputLoad,
-    const vector<double> &table, 
-    const double &col_idx, 
-    const double &row_idx
+    const double *table, 
+    const size_t &col_idx, 
+    const size_t &row_idx
 ){
-    size_t colSize = cellLib.index_1.size();
-    const double &col_1 = cellLib.index_1[col_idx-1];
-    const double &col_2 = cellLib.index_1[col_idx];
-    const double &row_1 = cellLib.index_2[row_idx-1];
-    const double &row_2 = cellLib.index_2[row_idx];
+    const double &col_1 = index_1[col_idx-1];
+    const double &col_2 = index_1[col_idx];
+    const double &row_1 = index_2[row_idx-1];
+    const double &row_2 = index_2[row_idx];
 
-    const double &col_1_row_1_val = table[(col_idx-1) + (row_idx-1) * colSize];
-    const double &col_2_row_1_val = table[(col_idx)   + (row_idx-1) * colSize];
-    const double &col_1_row_2_val = table[(col_idx-1) + (row_idx)   * colSize];
-    const double &col_2_row_2_val = table[(col_idx)   + (row_idx)   * colSize];
+    const double &col_1_row_1_val = table[(col_idx-1) + (row_idx-1) * INDEXSIZE];
+    const double &col_2_row_1_val = table[(col_idx)   + (row_idx-1) * INDEXSIZE];
+    const double &col_1_row_2_val = table[(col_idx-1) + (row_idx)   * INDEXSIZE];
+    const double &col_2_row_2_val = table[(col_idx)   + (row_idx)   * INDEXSIZE];
 
     const double A = col_1_row_1_val + (col_2_row_1_val-col_1_row_1_val) / (col_2-col_1) * (outputLoad-col_1);
     const double B = col_1_row_2_val + (col_2_row_2_val-col_1_row_2_val) / (col_2-col_1) * (outputLoad-col_1);
@@ -368,23 +371,25 @@ double STA::interpolate(
 double STA::tableLookUp(const Cell* const &cell, const TableType &tableType){
     size_t index_1_idx, index_2_idx;
     //If larger, use binary search
-    size_t colSize = cellLib.index_1.size();
-    size_t rowSize = cellLib.index_2.size();
     const double &outputLoad = cell->outputLoad;
     const double &inputTransition = cell->inputTransition;
-    for(index_1_idx = 0; index_1_idx < colSize; index_1_idx++){
-        if(cellLib.index_1[index_1_idx] > outputLoad) break;
+    for(index_1_idx = 0; index_1_idx < INDEXSIZE; index_1_idx++){
+        if(index_1[index_1_idx] > outputLoad) break;
     }
     if(index_1_idx == 0) index_1_idx = 1;
-    else if(index_1_idx == colSize) index_1_idx = colSize - 1;
+    else if(index_1_idx == INDEXSIZE) index_1_idx = INDEXSIZE - 1;
 
-    for(index_2_idx = 0; index_2_idx < rowSize; index_2_idx++){
-        if(cellLib.index_2[index_2_idx] > inputTransition) break;
+    for(index_2_idx = 0; index_2_idx < INDEXSIZE; index_2_idx++){
+        if(index_2[index_2_idx] > inputTransition) break;
     }
     if(index_2_idx == 0) index_2_idx = 1;
-    else if(index_2_idx == rowSize) index_2_idx = rowSize - 1;
+    else if(index_2_idx == INDEXSIZE) index_2_idx = INDEXSIZE - 1;
 
-    const vector<double> &table = cellLib.cellInfos[cell->type]->tables[tableType];
+    // const array<double,49> &table = cellLib.cellInfos[cell->type]->tables[tableType];
+    const double *table = nullptr;
+    if(cell->type == NOR2X1)       table = NOR2X1_table[tableType];
+    else if(cell->type == NANDX1)  table = NANDX1_table[tableType];
+    else /* cell->type == INVX1 */ table = INVX1_table[tableType];
     
     return interpolate(
         cell->inputTransition,

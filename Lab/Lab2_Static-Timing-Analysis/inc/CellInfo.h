@@ -1,7 +1,6 @@
 #ifndef CELLINFO_H
 #define CELLINFO_H
-#include <bits/stdc++.h>
-#include <unordered_map>
+#include <array>
 #include "Util.h"
 using namespace std;
 
@@ -10,9 +9,9 @@ public:
     CellInfo();
     ~CellInfo();
     
-    vector<double> pinCap;
-    vector<vector<double>> tables; // first: TableType (cell_rise, cell_fall, rise_transition, fall_transition)
-                                   // second: look-up table
+    array<double,2> pinCap;
+    array<array<double,49>,4> tables; // first: TableType (cell_rise, cell_fall, rise_transition, fall_transition)
+                                      // second: look-up table
 };
 
 #endif

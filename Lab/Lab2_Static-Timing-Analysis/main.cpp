@@ -1,5 +1,6 @@
 #include "STA.h"
 #include <chrono>
+#include <iostream>
 
 string netlistPath;
 string libraryPath;
@@ -23,7 +24,7 @@ int main(int argc, char* argv[]) {
     extractPath(argc, argv);
     
     sta.verilogParser(netlistPath);
-    sta.libraryParser(libraryPath);
+    // sta.libraryParser(libraryPath);
     sta.patternParser(patternPath);
     sta.topologicalSort();
 

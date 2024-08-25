@@ -1,7 +1,16 @@
 #ifndef STA_H
 #define STA_H
-#include <bits/stdc++.h>
+#include <iomanip>
+#include <vector>
+#include <unordered_map>
+#include <array>
+#include <string>
+#include <queue>
+#include <sstream>
+#include <fstream>
 #include <regex>
+#include <cassert>
+#include <cfloat>
 #include "Util.h"
 #include "Net.h"
 #include "Cell.h"
@@ -44,9 +53,9 @@ private:
     double interpolate(
         const double &inputTransition,
         const double &outputLoad,
-        const vector<double> &table, 
-        const double &col_idx, 
-        const double &row_idx
+        const double *table, 
+        const size_t &col_idx, 
+        const size_t &row_idx
     );
     double tableLookUp(const Cell* const &cell, const TableType &tableType);
     void calInputTransitionTime(Cell* const &cell);

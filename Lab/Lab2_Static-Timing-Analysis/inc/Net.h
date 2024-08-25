@@ -1,6 +1,7 @@
 #ifndef NET_H
 #define NET_H
-#include <bits/stdc++.h>
+#include <vector>
+#include <string>
 #include "Util.h"
 using namespace std;
 
