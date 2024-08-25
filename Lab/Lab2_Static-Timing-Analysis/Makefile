@@ -1,6 +1,6 @@
 # compiler settings 
 CXX = g++
-CXXFLAGS = -I ./inc -std=c++11 -static -fopenmp -DPRINTTIME=true -DNDEBUG 
+CXXFLAGS = -I ./inc -std=c++11 -static -DPRINTTIME=true -DNDEBUG 
 OPTFLAGS = -flto -funroll-loops -finline-functions -O3 -ffast-math
 WARNINGS = -g -Wall
 
