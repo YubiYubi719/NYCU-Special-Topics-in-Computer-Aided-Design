@@ -303,7 +303,7 @@ void STA::topologicalSort(){
     while(!q.empty()){
         Cell* topCell = q.front();
         q.pop();
-        for(Cell* &adjCell:topCell->outputNet->outputCell){
+        for(Cell* const &adjCell : topCell->outputNet->outputCell){
             adjCell->inDegree--;
             if(adjCell->inDegree == 0){
                 q.push(adjCell);
