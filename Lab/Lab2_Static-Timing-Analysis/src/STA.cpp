@@ -1,6 +1,6 @@
 #include "STA.h"
 
-STA::STA(): inputNum(0){
+STA::STA(): inputNum(0), maxDelay(DBL_MIN), minDelay(DBL_MAX){
     ;
 }
 
@@ -495,8 +495,6 @@ vector<Net*> STA::findPath(Cell* cell){
 }
 
 void STA::pathFinding(){
-    maxDelay = DBL_MIN;
-    minDelay = DBL_MAX;
     Cell *longestPathCell = nullptr, *shortestPathCell = nullptr;
     for(Cell* const &cell : outputCell){
         double outputDelay = cell->arrivalTime + cell->delay;

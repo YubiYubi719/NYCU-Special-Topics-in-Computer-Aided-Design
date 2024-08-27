@@ -5,12 +5,11 @@
 #include <regex>
 using namespace std;
 
-#define WIRE_DELAY  0.005
-#define OUTPUT_LOAD 0.03
-#define MAX_THREADS 8
-#define HIGH '1'
-#define LOW  '0'
-#define DONTCARE 'X'
+constexpr double WIRE_DELAY = 0.005;
+constexpr double OUTPUT_LOAD  = 0.03;
+constexpr char HIGH = '1';
+constexpr char LOW = '0';
+constexpr char DONTCARE = 'X';
 
 enum CellType{
     NANDX1,
