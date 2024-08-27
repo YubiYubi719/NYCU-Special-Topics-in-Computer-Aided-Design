@@ -61,7 +61,7 @@ private:
     void calInputTransitionTime(Cell* const &cell);
     vector<Net*> findPath(Cell* cell);
     void calInputTransitionTime_Simulate(Cell* const &cell);
-    void simulate(const vector<char> &pattern);
+    void simulate(const vector<short> &pattern);
     void dumpGateInfo(ostringstream &oss, const vector<Cell*> &cells);
 
 //  *********************************
@@ -73,7 +73,7 @@ private:
     unordered_map<string,Net*>  netMap;
     unordered_map<size_t,Cell*> cellMap;
     vector<string> patternOrder;
-    vector<vector<char>> patterns;
+    vector<vector<short>> patterns;
     vector<Cell*> t_sort;
     Library cellLib;
     double maxDelay, minDelay;

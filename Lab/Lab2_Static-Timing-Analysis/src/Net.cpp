@@ -9,7 +9,7 @@ Net::Net(
     const NetType &netType
 ) : name(netName), 
     type(netType),
-    value(DONTCARE),
+    value(false),
     inputCell(nullptr){
     ;
 }

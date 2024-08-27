@@ -274,7 +274,7 @@ void STA::patternParser(const string &patternPath){
     // Read pattern
     istringstream iss;
     while(getline(input,curLine)){
-        vector<char> pattern(inputNum);
+        vector<short> pattern(inputNum);
         if(curLine == ".end") break;
         iss.clear();
         iss.str(curLine);
@@ -545,7 +545,7 @@ void STA::calInputTransitionTime_Simulate(Cell* const &cell){
             cell->inputTransition = prevCell->outputTransition;
             cell->arrivalTime = prevCell->arrivalTime + prevCell->delay + WIRE_DELAY;
         }
-        cell->value = (I->value == LOW)? HIGH : LOW;
+        cell->value = (I->value)? LOW : HIGH;
         return;
     }
 
@@ -623,7 +623,7 @@ void STA::calInputTransitionTime_Simulate(Cell* const &cell){
     cell->value = truthTable[cell->type](A1->value,A2->value);
 }
 
-void STA::simulate(const vector<char> &pattern){
+void STA::simulate(const vector<short> &pattern){
     size_t patternSize = pattern.size();
     for(size_t i = 0; i < patternSize; i++){
         netMap.at(patternOrder[i])->value = pattern[i];
@@ -636,12 +636,12 @@ void STA::simulate(const vector<char> &pattern){
         if(cell->value == HIGH){
             cell->delay = tableLookUp(cell,cell_rise);
             cell->outputTransition = tableLookUp(cell,rise_transition);
-            cell->outputNet->value = HIGH;
+            cell->outputNet->value = true;
         }
         else /* cell->value == LOW */ {
             cell->delay = tableLookUp(cell,cell_fall);
             cell->outputTransition = tableLookUp(cell,fall_transition);
-            cell->outputNet->value = LOW;
+            cell->outputNet->value = false;
         }
     }
 }
@@ -653,7 +653,7 @@ void STA::assignPattern(){
     ostringstream oss;
     oss << fixed << setprecision(6);
     sort(cellsInGateOrder.begin(), cellsInGateOrder.end(), Cell::ascendingGateOrder);
-    for(const vector<char> &pattern : patterns){
+    for(const vector<short> &pattern : patterns){
         simulate(pattern);
         dumpGateInfo(oss,cellsInGateOrder);
     }

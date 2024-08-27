@@ -15,7 +15,7 @@ public:
 
     string name;
     NetType type;
-    char value;
+    bool value;
     Cell* inputCell;
     vector<Cell*> outputCell;
 };

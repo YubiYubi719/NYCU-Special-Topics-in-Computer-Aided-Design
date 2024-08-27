@@ -61,9 +61,9 @@ const regex Pin_Pattern("pin\\(([AI]\\d*)\\)");
 const regex Capacitance_Pattern("capacitance *: *(\\d+\\.\\d+);");
 const regex Table_Pattern("(cell_rise)|(cell_fall)|(rise_transition)|(fall_transition)");
 
-using TablePtr = char (*)(const char&, const char&);
-char NAND_truthTable(const char &a, const char &b);
-char NOR_truthTable(const char &a, const char &b);
+using TablePtr = char (*)(const bool&, const bool&);
+char NAND_truthTable(const bool &a, const bool &b);
+char NOR_truthTable(const bool &a, const bool &b);
 
 const vector<TablePtr> truthTable = { NAND_truthTable, NOR_truthTable };
 

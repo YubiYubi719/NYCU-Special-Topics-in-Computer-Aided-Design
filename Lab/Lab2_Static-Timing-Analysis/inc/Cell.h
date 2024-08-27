@@ -27,7 +27,7 @@ public:
     Cell* prevCell; // record the gate of latest arrived signal
     char worstCaseValue; // used in step 2 for analyzing worst case output delay
     char value;  // used in step 4 as real gate value correspond to the input pattern
-    char controllingValue;
+    bool controllingValue;
     size_t number;
 };
 

@@ -27,9 +27,8 @@ Cell::Cell(
     prevCell(nullptr),
     worstCaseValue(' '){
         
-    if(cellType == INVX1)         controllingValue = DONTCARE; // both 0 and 1 are controlling value
-    else if(cellType == NANDX1)   controllingValue = LOW;
-    else /* cellType == NOR2X1 */ controllingValue = HIGH;
+    if(cellType == NANDX1)   controllingValue = false;
+    else /* cellType == NOR2X1 */ controllingValue = true;
 
     inputNet = {{nullptr , nullptr}};
     number = stoi(cellName.substr(1));
