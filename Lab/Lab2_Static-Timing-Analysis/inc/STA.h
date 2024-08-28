@@ -1,5 +1,6 @@
 #ifndef STA_H
 #define STA_H
+#include <iostream>
 #include <iomanip>
 #include <vector>
 #include <unordered_map>

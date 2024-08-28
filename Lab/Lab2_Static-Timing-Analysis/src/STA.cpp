@@ -37,11 +37,10 @@ string STA::removeComment(const string &code){
             cleanCode += code[i++];
         }
         else if (!multiLineCmt && !singleLineCmt){
-            // add space between words and ( ) , ; .
+            // remove ( ) , ; .
             if (code[i] == '(' || code[i] == ')' || code[i] == ',' || code[i] == '.'){
                 cleanCode += " ";
-                cleanCode += code[i++];
-                cleanCode += " ";
+                i++;
             }
             else if(code[i] == ';'){
                 cleanCode += " ";
@@ -115,11 +114,10 @@ void STA::verilogParser(const string &netlistPath){
             // Extract netName
             NetType netType = str2NetType(opType);
             while(iss >> netName){
-                if(isalpha(netName[0])){
-                    if(netType == input) inputNum++;
-                    Net* net = new Net(netName,netType);
-                    netMap[netName] = net;
-                }
+                if(netName == ";") break;
+                if(netType == input) inputNum++;
+                Net* net = new Net(netName,netType);
+                netMap[netName] = net;
             }
         }
         // else if(opType == "INVX1" || opType == "NANDX1" || opType == "NOR2X1")
@@ -131,26 +129,26 @@ void STA::verilogParser(const string &netlistPath){
             while(iss >> curLine){
                 // input net
                 if(curLine == "A1"){
-                    iss >> netName >> netName; // ignore '('
+                    iss >> netName;
                     Net* &net = netMap.at(netName);
                     cell->inputNet[0] = net;
                     net->outputCell.push_back(cell);
                 }
                 else if(curLine == "A2"){
-                    iss >> netName >> netName; // ignore '('
+                    iss >> netName;
                     Net* &net = netMap.at(netName);
                     cell->inputNet[1] = net;
                     net->outputCell.push_back(cell);
                 }
                 else if(curLine == "I"){
-                    iss >> netName >> netName; // ignore '('
+                    iss >> netName;
                     Net* &net = netMap.at(netName);
                     cell->inputNet[0] = net;
                     net->outputCell.push_back(cell);
                 }
                 // output net
                 else if(curLine == "ZN"){
-                    iss >> netName >> netName; // ignore '('
+                    iss >> netName;
                     Net* outputNet = netMap.at(netName);
                     cell->outputNet = outputNet;
                     outputNet->inputCell = cell;
