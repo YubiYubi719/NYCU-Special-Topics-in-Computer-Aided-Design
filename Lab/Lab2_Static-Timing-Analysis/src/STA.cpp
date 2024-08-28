@@ -5,8 +5,8 @@ STA::STA(): inputNum(0), maxDelay(DBL_MIN), minDelay(DBL_MAX){
 }
 
 STA::~STA(){
-    for(const pair<const string,Net*>  &p : netMap)  delete p.second;
-    for(const pair<const size_t,Cell*> &p : cellMap) delete p.second;
+    for(const pair<const string,Net*> &p : nets)  delete p.second;
+    for(const Cell* const &cell : cells) delete cell;
 }
 
 string STA::removeComment(const string &code){
@@ -117,7 +117,7 @@ void STA::verilogParser(const string &netlistPath){
                 if(netName == ";") break;
                 if(netType == input) inputNum++;
                 Net* net = new Net(netName,netType);
-                netMap[netName] = net;
+                nets[netName] = net;
             }
         }
         // else if(opType == "INVX1" || opType == "NANDX1" || opType == "NOR2X1")
@@ -130,32 +130,32 @@ void STA::verilogParser(const string &netlistPath){
                 // input net
                 if(curLine == "A1"){
                     iss >> netName;
-                    Net* &net = netMap.at(netName);
+                    Net* &net = nets.at(netName);
                     cell->inputNet[0] = net;
                     net->outputCell.push_back(cell);
                 }
                 else if(curLine == "A2"){
                     iss >> netName;
-                    Net* &net = netMap.at(netName);
+                    Net* &net = nets.at(netName);
                     cell->inputNet[1] = net;
                     net->outputCell.push_back(cell);
                 }
                 else if(curLine == "I"){
                     iss >> netName;
-                    Net* &net = netMap.at(netName);
+                    Net* &net = nets.at(netName);
                     cell->inputNet[0] = net;
                     net->outputCell.push_back(cell);
                 }
                 // output net
                 else if(curLine == "ZN"){
                     iss >> netName;
-                    Net* outputNet = netMap.at(netName);
+                    Net* &outputNet = nets.at(netName);
                     cell->outputNet = outputNet;
                     outputNet->inputCell = cell;
                     if(outputNet->type == output) outputCell.push_back(cell);
                 }
             }
-            cellMap[cell->number] = cell;
+            cells.push_back(cell);
         }
     }
 }
@@ -287,8 +287,7 @@ void STA::patternParser(const string &patternPath){
 */
 void STA::topologicalSort(){
     queue<Cell*> q;
-    for(const pair<const size_t,Cell*> &p : cellMap){
-        Cell* cell = p.second;
+    for(Cell* const &cell : cells){
         for(Net* const &net : cell->inputNet){
             if(net == nullptr) break;
             if(net->type != input) cell->inDegree++;
@@ -309,7 +308,7 @@ void STA::topologicalSort(){
             }
         }
     }
-    assert(t_sort.size() == cellMap.size());
+    assert(t_sort.size() == cells.size());
 }
 
 void STA::calOutputLoad(){
@@ -624,7 +623,7 @@ void STA::calInputTransitionTime_Simulate(Cell* const &cell){
 void STA::simulate(const vector<short> &pattern){
     size_t patternSize = pattern.size();
     for(size_t i = 0; i < patternSize; i++){
-        netMap.at(patternOrder[i])->value = pattern[i];
+        nets.at(patternOrder[i])->value = pattern[i];
     }
     // Traverse netlist in topological order
     for(Cell* const &cell : t_sort){
@@ -645,9 +644,9 @@ void STA::simulate(const vector<short> &pattern){
 }
 
 void STA::assignPattern(){
-    vector<Cell*> cellsInGateOrder(t_sort);
+    vector<Cell*> cellsInGateOrder(cells);
     string result;
-    result.reserve(patterns.size()*t_sort.size()*30);
+    result.reserve(patterns.size()*cells.size()*30);
     ostringstream oss;
     oss << fixed << setprecision(6);
     sort(cellsInGateOrder.begin(), cellsInGateOrder.end(), Cell::ascendingGateOrder);
@@ -662,8 +661,8 @@ void STA::assignPattern(){
     output.close();
 }
 
-void STA::dumpGateInfo(ostringstream &oss, const vector<Cell*> &cells){
-    for(const Cell* const &cell : cells){
+void STA::dumpGateInfo(ostringstream &oss, const vector<Cell*> &cellsInGateOrder){
+    for(const Cell* const &cell : cellsInGateOrder){
         oss << cell->name  << " " 
             << cell->value << " "
             << cell->delay << " "
