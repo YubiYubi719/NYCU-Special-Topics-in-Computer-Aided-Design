@@ -4,10 +4,10 @@ You can see it in prog1_2024.pdf
 ## Execution
 
 ```makefile
-$ make
+$ make or make -j
 ```
 
-* Change CASEIDX in line 19 to run different cases
+Change CASEIDX in line 19 to run different cases
 
 ```makefile
 $ make run

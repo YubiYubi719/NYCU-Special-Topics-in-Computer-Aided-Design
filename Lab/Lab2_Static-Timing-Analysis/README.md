@@ -4,10 +4,10 @@ You can see it in *spec* directory
 ## Execution
 
 ```makefile
-$ make
+$ make -j
 ```
 
-* Change CASENAME in line 15 to run different cases
+Change CASENAME in line 15 to run different cases
 
 ```makefile
 $ make run
