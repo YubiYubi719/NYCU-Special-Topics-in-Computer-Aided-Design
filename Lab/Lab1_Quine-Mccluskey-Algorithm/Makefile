@@ -16,8 +16,7 @@ OBJS = $(patsubst $(SRCDIR)/%.cpp,$(OBJDIR)/%.o,$(SRCS))
 CASEDIR = testcase/OpenCase
 OUTPUTDIR = output
 
-# change here!!
-CASEIDX = 2
+CASEIDX = 2 # change here!!
 TESTINPUT = input$(CASEIDX).txt
 TESTOUTPUT = output$(CASEIDX).txt
 

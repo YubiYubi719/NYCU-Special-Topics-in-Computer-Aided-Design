@@ -5,6 +5,11 @@ You can see it in prog1_2024.pdf
 
 ```makefile
 $ make
+```
+
+* Change CASEIDX in line 19 to run different cases
+
+```makefile
 $ make run
 ```
 

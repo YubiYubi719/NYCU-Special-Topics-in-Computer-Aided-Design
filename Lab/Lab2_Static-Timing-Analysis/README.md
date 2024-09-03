@@ -2,10 +2,14 @@
 You can see it in *spec* directory
 
 ## Execution
-* Change CASENAME in line 15 to run different cases
 
 ```makefile
 $ make
+```
+
+* Change CASENAME in line 15 to run different cases
+
+```makefile
 $ make run
 ```
 
