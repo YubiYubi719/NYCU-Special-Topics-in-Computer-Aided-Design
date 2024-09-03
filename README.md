@@ -1,1 +1,1 @@
-## This is a c++ course, not verilog
+# This is a c++ course, not verilog
