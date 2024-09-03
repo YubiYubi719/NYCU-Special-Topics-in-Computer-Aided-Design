@@ -12,10 +12,9 @@ SRCS = $(wildcard $(SRCDIR)/*.cpp)
 OBJS = $(patsubst $(SRCDIR)/%.cpp,$(OBJDIR)/%.o,$(SRCS))
 
 # testcase file
-CASENAME = c17
+CASENAME = c17 # change here!!
 CASEDIR = testcase/$(CASENAME)
 
-# change here!!
 NETLIST = $(CASENAME).v
 LIBRARY = testcase/test_lib.lib
 PATTERN = $(CASENAME).pat
