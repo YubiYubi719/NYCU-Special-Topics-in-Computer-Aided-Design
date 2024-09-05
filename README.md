@@ -1,4 +1,4 @@
-# IEE Special Topics on Computer Aided Design
+# IEE Special Topics in Computer Aided Design
 ## Class Intro.
 * Instructor: 劉建男
 * Prerequisites: C++, Introduction to digital systems and VLSI design
